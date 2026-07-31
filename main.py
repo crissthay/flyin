@@ -1,4 +1,6 @@
 from flyin.parse import Parse
+from flyin.simulation import Simulation
+
 import sys
 
 
@@ -14,6 +16,19 @@ def main():
 
     print(config.hubs)
     print(config.connections)
+    s = Simulation(config.hubs,
+        config.connections,
+        config.nb_drones,
+        config.start_hub,
+        config.end_hub,
+        )
+    s.create_drones()
+    s.bfs()
+
+    print(s.drone_list)
+    print(s.start_hub.drones)
+    print(s.start_hub.max_drones)
+    
     #except:
         #pass
         
