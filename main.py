@@ -23,8 +23,11 @@ def main():
         config.end_hub,
         )
     s.create_drones()
-    s.bfs()
+    path = s.bfs()
+    s.simulate()
 
+
+    print(path)
     print(s.drone_list)
     print(s.start_hub.drones)
     print(s.start_hub.max_drones)

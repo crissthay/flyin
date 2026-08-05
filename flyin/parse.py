@@ -36,7 +36,7 @@ class Parse:
 
 
     def check_line(self) -> list[str]:
-        val_lines = []
+        val_lines: list[str] = []
 
         for lines in self.lines_list:
             if lines == "":
@@ -139,7 +139,7 @@ class Parse:
         self.hubs.append(hub)
         return hub
     
-    def find_hub(self, name: str):
+    def find_hub(self, name: str) -> None:
         for hub in self.hubs:
             if hub.name == name:
                 return hub
@@ -166,7 +166,9 @@ class Parse:
             hub2_obj,
             info["max_link_capacity"]
         )
-        self.connections.append(connection)    
+        self.connections.append(connection)  
+
+  
     def type_lines(self) -> None:
         val_line: list[str] = self.check_line()
 

@@ -8,7 +8,7 @@ class Simulation:
         self,
         hubs,
         connections,
-        nb_drones,
+        nb_drones: int,
         start_hub,
         end_hub
         ):
@@ -54,6 +54,46 @@ class Simulation:
                     visited.add(hub)
                     queue.append(hub)
                     parent[hub] = hub_now
+        path = []
+        current = self.end_hub
+        
+        if self.end_hub not in parent:
+            return []
+        while current is not None:
+            path.append(current)
+            current = parent[current]
 
-            
-        return
+        path.reverse() 
+        return path
+    
+    def check_connect(self, hub1, hub2):
+        for connect in self.connections:
+            if (
+                (connect.hub1 == hub1 and connect.hub2 == hub2)
+                or
+                (connect.hub1 == hub2 and connect.hub2 == hub1)
+            ):
+                return connect
+        return None
+        
+    def move_drone(self, drone, next_hub) -> None:
+        current = drone.location
+        connection = self.check_connect(current, next_hub)
+        if connection is None:
+            return
+        if (
+            not next_hub.is_full()
+            and not next_hub.is_blocked()
+            and not connection.is_full_connect()
+        ):
+            current.remove_drone(drone)
+            next_hub.add_drone(drone)
+            drone.location = next_hub
+
+    def simulate(self):
+        path = self.bfs()
+        for i in range(len(path) - 1):
+            next_hub = path(i + 1)
+            for drone in self.drone_list:
+                self.move_drone(drone, next_hub)
+    
