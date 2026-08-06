@@ -14,8 +14,8 @@ def main():
     config.open_read_file()
     config.type_lines()
 
-    print(config.hubs)
-    print(config.connections)
+    #print(config.hubs)
+    #print(config.connections)
     s = Simulation(config.hubs,
         config.connections,
         config.nb_drones,
@@ -25,12 +25,13 @@ def main():
     s.create_drones()
     path = s.bfs()
     s.simulate()
+    
 
-
-    print(path)
-    print(s.drone_list)
-    print(s.start_hub.drones)
-    print(s.start_hub.max_drones)
+    #print(s.end_hub.drones)
+    #print(path)
+    #print(s.drone_list)
+    #print(s.start_hub.drones)
+    #print(s.start_hub.max_drones)
     
     #except:
         #pass

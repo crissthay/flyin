@@ -42,18 +42,20 @@ class Simulation:
         parent = {
             self.start_hub: None
             }
-        visit_order = []
 
         while queue:
             hub_now = queue.popleft()
-            visit_order.append(hub_now)
             if hub_now == self.end_hub:
                 break
             for hub in self.get_neighbors(hub_now):
-                if hub not in visited:
-                    visited.add(hub)
-                    queue.append(hub)
-                    parent[hub] = hub_now
+                if hub.is_blocked():
+                    continue
+                if hub in visited:
+                    continue
+
+                visited.add(hub)
+                queue.append(hub)
+                parent[hub] = hub_now
         path = []
         current = self.end_hub
         
@@ -76,24 +78,54 @@ class Simulation:
                 return connect
         return None
         
-    def move_drone(self, drone, next_hub) -> None:
+    def move_drone(self, drone, next_hub) -> bool:
         current = drone.location
         connection = self.check_connect(current, next_hub)
         if connection is None:
-            return
+            return False
+        
         if (
             not next_hub.is_full()
             and not next_hub.is_blocked()
             and not connection.is_full_connect()
         ):
+            connection.add_drone(drone)
             current.remove_drone(drone)
             next_hub.add_drone(drone)
             drone.location = next_hub
+            return True
+        return False
+
 
     def simulate(self):
         path = self.bfs()
-        for i in range(len(path) - 1):
-            next_hub = path(i + 1)
+        if not path:
+            print("Can't move: no path to destination.")
+            return
+        turn = 1
+        while any(drone.location != self.end_hub for drone in self.drone_list):
+            print(f"\nTurn {turn}")
+            moved = False
+
             for drone in self.drone_list:
-                self.move_drone(drone, next_hub)
+                if drone.location == self.end_hub:
+                    continue
+
+                indice = path.index(drone.location)
+                if indice == len(path) - 1:
+                    continue
+
+                next_hub = path[indice + 1]
+                if self.move_drone(drone, next_hub):
+                    moved = True
+                    print(drone.id_name, "->", next_hub.name)
+
+            for connection in self.connections:
+                connection.drones.clear()  
+
+            turn += 1
+
+            if not moved:
+                print("Can't move anymore.")
+                break
     

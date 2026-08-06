@@ -84,24 +84,21 @@ class Parse:
         }
     
     def meta_connect(self, line: str) -> dict:
-        capacity: int = 1
-        splited_meta: list[str] = line.strip().split()
-        meta: list[str] = splited_meta[2:]
+        capacity = float("inf")
+
+        splited_meta = line.strip().split()
+        meta = splited_meta[2:]
+
         for item in meta:
             item = item.strip("[]")
             key, value = item.split("=")
+
             if key == "max_link_capacity":
-                try:
-                    capacity = int(value)
-                except ValueError:
-                    print("ERRO - Max_link_capacity must to be a integer")
-                    sys.exit(1)
-            else:
-                print("ERRO - Metadata doesn't exist")
-                sys.exit(1)
+                capacity = int(value)
+
         return {
             "max_link_capacity": capacity
-            }
+        }
         
     def parse_nb(self, line: str):
         splited_nb: list[str] = line.strip().split()

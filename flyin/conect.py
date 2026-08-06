@@ -5,7 +5,7 @@ class Connection:
             self,
             hub1: Hub,
             hub2: Hub,
-            max_link_capacity: int = 1) -> None:
+            max_link_capacity: int = float("inf")) -> None:
         self.hub1 = hub1
         self.hub2 = hub2
         self.max_link_capacity = max_link_capacity
