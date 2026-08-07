@@ -15,7 +15,7 @@ class Visual:
         pass
 
     def draw_drones(self):
-        ...
+        pass
 
     def update(self):
-        ...
+        pass
