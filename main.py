@@ -1,5 +1,6 @@
 from flyin.parse import Parse
 from flyin.simulation import Simulation
+from visual.visual import Visual
 
 import sys
 
@@ -25,6 +26,8 @@ def main():
     s.create_drones()
     path = s.bfs()
     s.simulate()
+    visual = Visual()
+    visual.load_images()
     
 
     #print(s.end_hub.drones)

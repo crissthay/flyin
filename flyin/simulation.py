@@ -96,7 +96,6 @@ class Simulation:
             return True
         return False
 
-
     def simulate(self):
         path = self.bfs()
         if not path:
@@ -128,4 +127,3 @@ class Simulation:
             if not moved:
                 print("Can't move anymore.")
                 break
-    
