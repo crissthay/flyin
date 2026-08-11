@@ -15,8 +15,6 @@ def main():
     config.open_read_file()
     config.type_lines()
 
-    #print(config.hubs)
-    #print(config.connections)
     s = Simulation(config.hubs,
         config.connections,
         config.nb_drones,
@@ -24,11 +22,12 @@ def main():
         config.end_hub,
         )
     s.create_drones()
-    path = s.bfs()
     s.simulate()
-    visual = Visual()
+    visual = Visual(config.hubs, config.start_hub, config.end_hub)
     visual.load_images()
     
+
+
 
     #print(s.end_hub.drones)
     #print(path)

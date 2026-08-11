@@ -3,7 +3,7 @@ nb_drones: 3
 start_hub: start 0 0
 end_hub: goal 2 0
 
-hub: middle 1 0 [max_drones=3]
+hub: middle 1 0 [max_drones=3 color=yellow]
 
 connection: start-middle
 connection: middle-goal [max_link_capacity=1]

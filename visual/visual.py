@@ -1,39 +1,102 @@
 import pygame
 import sys
+import random
+import math
 
 
 class Visual:
-    def __init__(self):
+    def __init__(self, hubs, start_hub, end_hub):
         pygame.init()
-        self.width = 736 #largura
-        self.height = 414 #altura
+        self.width = 1000 #largura
+        self.height = 600 #altura
         self.screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption("Fly-in")
 
+        self.start_hub = start_hub
+        self.end_hub = end_hub
+        self.hubs = hubs
         self.loop = True
+        self.stars = []
+
+        for i in range(100):
+            x = random.randint(0, self.width)
+            y = random.randint(0, self.height)
+            phase = random.uniform(0, math.pi * 2)
+            speed = random.uniform(0.5, 2.0)
+            self.stars.append([x, y, phase, speed])
+
     def load_images(self):
-        back = pygame.image.load('visual/galaxy.bg.jpeg')
+        back = pygame.image.load('visual/galaxybg.jpeg')
+        back = pygame.transform.scale(back, (self.width, self.height))
+
         while self.loop:
             for events in pygame.event.get():
                 if events.type == pygame.QUIT:
                     self.loop = False
-            
-            self.screen.blit(back, (0,0))
-            
-            pygame.display.update()
-        pygame.quit()
 
-    def draw_background(self):
-        pass
+            self.screen.blit(back, (0, 0))
+            self.draw_hubs()
+            self.draw_stars()
+
+            pygame.display.update()
+
+        pygame.quit()
 
     def draw_connections(self):
         pass
+    def draw_stars(self):
+        for star in self.stars:
+            x, y, phase, speed = star
 
+            brightness = (math.sin(phase) + 1) / 2
+
+            size = 1 if brightness < 0.7 else 2
+
+            pygame.draw.circle(
+                self.screen,
+                (255, 255, 255),
+                (x, y),
+                size
+            )
+            star[2] += 0.10 * speed
+    
     def draw_hubs(self):
-        pass
+        planet = pygame.image.load('visual/planetfinal.png')
+        planet = pygame.transform.scale(planet, (90, 60))
+        start_end = pygame.image.load('visual/start_endbg.png')
+        start_end = pygame.transform.scale(start_end, (100, 70))
+        yellow = pygame.image.load('visual/planetyellow.png')
+        yellow = pygame.transform.scale(yellow, (90, 60))
+        gray = pygame.image.load('visual/planetgray.png')
+        gray = pygame.transform.scale(gray, (90, 60))
 
+        for hub in self.hubs:
+            x = hub.x * 100
+            y = hub.y * 100
+
+            if hub == self.start_hub or hub == self.end_hub:
+                offset_y = math.sin(pygame.time.get_ticks() * 0.002) * 2
+                self.screen.blit(start_end, (x, y + offset_y))
+            else:
+                if hub.color == "red":
+                    planet.fill((255, 0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+                    self.screen.blit(planet, (x, y))
+                elif hub.color == "green":
+                    planet.fill((0, 255, 0), special_flags=pygame.BLEND_RGBA_MULT)
+                    self.screen.blit(planet, (x, y))
+                elif hub.color == "yellow":
+                    planet.fill((255, 255, 0), special_flags=pygame.BLEND_RGBA_MULT)
+                    self.screen.blit(yellow, (x, y))
+                elif hub.color == "blue":
+                    planet.fill((0, 0, 255), special_flags=pygame.BLEND_RGBA_MULT)
+                    self.screen.blit(planet, (x, y))
+                elif hub.color == "gray":
+                    self.screen.blit(gray, (x, y))
+                elif hub.color == "pink":
+                    planet.fill((255, 20, 147), special_flags=pygame.BLEND_RGBA_MULT)
+                    self.screen.blit(planet, (x, y))
+                else:
+                    self.screen.blit(planet, (x, y))
+        
     def draw_drones(self):
-        pass
-
-    def update(self):
         pass

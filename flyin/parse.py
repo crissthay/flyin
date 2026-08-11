@@ -11,7 +11,9 @@ color_valid: list[str] = [
     "yellow",
     "black",
     "purple",
-    "gray"
+    "gray",
+    "pink",
+
 ]
 class Parse:
     def __init__(self, file: str) -> None:
@@ -107,12 +109,17 @@ class Parse:
             sys.exit(1)
 
         int_ = splited_nb[1]
+
         try:
             self.nb_drones = int(int_)
         except ValueError:
             print(f"ERRO  - Must to be an interger number")
             sys.exit(1)
-    
+
+        if  self.nb_drones < 0:
+            print("NB_drones can't be negative")
+            sys.exit(1)
+
     def parse_hub(self, line):
         splited_se: list[str] = line.strip().split()
         if len(splited_se) < 4:
