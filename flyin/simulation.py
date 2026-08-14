@@ -2,6 +2,9 @@ from .drone import Drone
 from .conect import Connection
 from .hub import Hub
 from collections import deque
+import heapq
+
+
 
 class Simulation:
     def __init__(
@@ -35,7 +38,51 @@ class Simulation:
                 neighbors.append(conn.hub1)
         return neighbors
 
-    def bfs(self):
+
+    def dijkstra(self):
+        distances = {hub: float('inf') for hub in self.hubs}
+        distances[self.start_hub] = 0
+        parent = {
+            self.start_hub: None
+        }
+
+        queue = [(0, self.start_hub)]
+        while queue:
+            current_dis, current_hub = heapq.heappop(queue)
+            if current_dis > distances[current_hub]:
+                continue
+
+            for neighbor in self.get_neighbors(current_hub):
+                if neighbor.is_blocked():
+                    continue
+
+                if neighbor.zone == "restricted":
+                    weight = 2
+                else:
+                    weight = 1
+                
+                distance = current_dis + weight
+
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    parent[neighbor] = current_hub
+                    heapq.heappush(queue, (distance, neighbor))
+        
+        path = []
+        if self.end_hub not in parent:
+            return []
+        
+        current = self.end_hub
+        while current is not None:
+            path.append(current)
+            current = parent[current]
+
+        path.reverse() 
+        return path
+
+
+
+    """ def bfs(self):
         visited = set()
         queue = deque([self.start_hub])
         visited.add(self.start_hub)
@@ -66,7 +113,7 @@ class Simulation:
             current = parent[current]
 
         path.reverse() 
-        return path
+        return path"""
     
     def check_connect(self, hub1, hub2):
         for connect in self.connections:
@@ -97,7 +144,7 @@ class Simulation:
         return False
 
     def simulate(self):
-        path = self.bfs()
+        path = self.bfs()#mudar
         if not path:
             print("Can't move: no path to destination.")
             return

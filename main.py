@@ -23,7 +23,12 @@ def main():
         )
     s.create_drones()
     s.simulate()
-    visual = Visual(config.hubs, config.start_hub, config.end_hub)
+    visual = Visual(
+        config.hubs,
+        config.start_hub,
+        config.end_hub,
+        s.drone_list
+    )
     visual.load_images()
     
 

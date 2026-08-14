@@ -1,11 +1,11 @@
 import pygame
-import sys
+import colorsys
 import random
 import math
 
 
 class Visual:
-    def __init__(self, hubs, start_hub, end_hub):
+    def __init__(self, hubs, start_hub, end_hub, drones):
         pygame.init()
         self.width = 1000 #largura
         self.height = 600 #altura
@@ -16,9 +16,11 @@ class Visual:
         self.end_hub = end_hub
         self.hubs = hubs
         self.loop = True
+        self.drone_list = drones
         self.stars = []
+        self.hue = 0
 
-        for i in range(100):
+        for _ in range(100):
             x = random.randint(0, self.width)
             y = random.randint(0, self.height)
             phase = random.uniform(0, math.pi * 2)
@@ -37,6 +39,7 @@ class Visual:
             self.screen.blit(back, (0, 0))
             self.draw_hubs()
             self.draw_stars()
+            self.draw_drones()
 
             pygame.display.update()
 
@@ -63,6 +66,8 @@ class Visual:
     def draw_hubs(self):
         planet = pygame.image.load('visual/planetfinal.png')
         planet = pygame.transform.scale(planet, (90, 60))
+        planet_original = pygame.image.load('visual/planetfinal.png').convert_alpha()
+        planet_original = pygame.transform.scale(planet_original, (90, 60))
         start_end = pygame.image.load('visual/start_endbg.png')
         start_end = pygame.transform.scale(start_end, (100, 70))
         yellow = pygame.image.load('visual/planetyellow.png')
@@ -95,8 +100,26 @@ class Visual:
                 elif hub.color == "pink":
                     planet.fill((255, 20, 147), special_flags=pygame.BLEND_RGBA_MULT)
                     self.screen.blit(planet, (x, y))
+                elif hub.color == "rainbow":
+                    planet = planet_original.copy()
+                    rgb = colorsys.hsv_to_rgb(self.hue, 1, 1)
+                    rainbow_color = tuple(int(c * 255) for c in rgb)
+                    planet.fill((*rainbow_color, 255), special_flags=pygame.BLEND_RGBA_MULT)
+                    self.screen.blit(planet, (x, y))
                 else:
                     self.screen.blit(planet, (x, y))
+
+            self.hue = (self.hue + 0.005) % 1
         
     def draw_drones(self):
-        pass
+        drone_img = pygame.image.load(
+            'visual/drone.png'
+        ).convert_alpha()
+        drone_img = pygame.transform.scale(
+            drone_img, (100, 70)
+        )
+
+        for drone in self.drone_list:
+            x = drone.location.x * 100
+            y = drone.location.y * 100
+            self.screen.blit(drone_img, (x, y))

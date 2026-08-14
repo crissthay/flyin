@@ -28,3 +28,8 @@ class Hub():
     def remove_drone(self, drone):
         if drone in self.drones:
             self.drones.remove(drone)
+    
+    def movement_cost(self):
+        if self.zone == "restricted":
+            return 2
+        return 1
