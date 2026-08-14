@@ -31,14 +31,6 @@ def main():
     )
     visual.load_images()
     
-
-
-
-    #print(s.end_hub.drones)
-    #print(path)
-    #print(s.drone_list)
-    #print(s.start_hub.drones)
-    #print(s.start_hub.max_drones)
     
     #except:
         #pass

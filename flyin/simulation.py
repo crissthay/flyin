@@ -143,8 +143,9 @@ class Simulation:
             return True
         return False
 
-    def simulate(self):
-        path = self.bfs()#mudar
+    """def simulate(self):
+        path = self.dijkstra()
+        print("PATH:", [hub.name for hub in path])
         if not path:
             print("Can't move: no path to destination.")
             return
@@ -174,3 +175,82 @@ class Simulation:
             if not moved:
                 print("Can't move anymore.")
                 break
+"""
+
+    def simulate(self):
+        path = self.dijkstra()
+        turn = 1
+
+        if not path:
+            print("Can't move: no path to destination.")
+            return
+
+        while any(
+            drone.location != self.end_hub
+            for drone in self.drone_list
+        ):
+            print(f"\nTURN {turn}")
+            moves = []
+            moving_out = set()
+
+            for drone in self.drone_list:
+                if drone.location == self.end_hub:
+                    continue
+                indice = path.index(drone.location)
+
+                if indice == len(path) - 1:
+                    continue
+
+                next_hub = path[indice + 1]
+                connection = self.check_connect(
+                    drone.location,
+                    next_hub
+                )
+
+                moves.append(
+                    (drone, next_hub, connection)
+                )
+                moving_out.add(drone.location)
+            moved = False
+            for drone, next_hub, connection in moves:
+                if next_hub.is_blocked():
+                    continue
+
+                leaving = sum(
+                    1
+                    for d, _, _ in moves
+                    if d.location == next_hub
+                )
+
+                available_space = (
+                    next_hub.max_drones
+                    - len(next_hub.drones)
+                    + leaving
+                )
+
+                if available_space <= 0:
+                    continue
+
+                if connection.is_full_connect():
+                    continue
+
+                connection.add_drone(drone)
+                drone.location.remove_drone(drone)
+                next_hub.add_drone(drone)
+                drone.location = next_hub
+
+                moved = True
+
+                print(
+                    drone.id_name,
+                    "->",
+                    next_hub.name
+                )
+            for connection in self.connections:
+                connection.drones.clear()
+
+            if not moved:
+                print("Can't move anymore.")
+                break
+
+            turn += 1
