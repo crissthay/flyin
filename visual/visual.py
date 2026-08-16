@@ -75,7 +75,7 @@ class Visual:
         gray = pygame.image.load('visual/planetgray.png')
         gray = pygame.transform.scale(gray, (90, 60))
 
-        for hub in self.hubs:
+        for hub in self.hubs: #problema
             x = hub.x * 100
             y = hub.y * 100
 

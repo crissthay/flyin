@@ -37,8 +37,7 @@ class Simulation:
             elif conn.hub2 == hub:
                 neighbors.append(conn.hub1)
         return neighbors
-
-
+    
     def dijkstra(self):
         distances = {
             hub: (float('inf'), 0)
@@ -46,29 +45,38 @@ class Simulation:
         }
 
         distances[self.start_hub] = (0, 0)
+
         parent = {
             self.start_hub: None
         }
 
-        queue = [(0, 0, self.start_hub)]
+        counter = 0
+
+        queue = [
+            (0, 0, counter, self.start_hub)
+        ]
+
         while queue:
-            current_dis, current_priority, current_hub = heapq.heappop(queue)
+            current_dis, current_priority, _, current_hub = heapq.heappop(queue)
+
             if current_dis > distances[current_hub][0]:
                 continue
 
             for neighbor in self.get_neighbors(current_hub):
+
                 if neighbor.is_blocked():
                     continue
-                    
+
                 if neighbor.zone == "restricted":
                     weight = 2
                 else:
                     weight = 1
-                
+
                 priority = current_priority
 
                 if neighbor.zone == "priority":
                     priority += 1
+
                 distance = current_dis + weight
 
                 if (
@@ -79,20 +87,38 @@ class Simulation:
                         and priority > distances[neighbor][1]
                     )
                 ):
-                        distances[neighbor] = distance
-                        parent[neighbor] = current_hub
-                        heapq.heappush(queue, (distance, neighbor))
-        
+                    distances[neighbor] = (
+                        distance,
+                        priority
+                    )
+
+                    parent[neighbor] = current_hub
+
+                    counter += 1
+
+                    heapq.heappush(
+                        queue,
+                        (
+                            distance,
+                            -priority,
+                            counter,
+                            neighbor
+                        )
+                    )
+
         path = []
+
         if self.end_hub not in parent:
             return []
-        
+
         current = self.end_hub
+
         while current is not None:
             path.append(current)
             current = parent[current]
 
-        path.reverse() 
+        path.reverse()
+        print(path)
         return path
     
     def check_connect(self, hub1, hub2):

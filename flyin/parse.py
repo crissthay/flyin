@@ -172,24 +172,28 @@ class Parse:
         )
         self.connections.append(connection)  
 
-  
+
     def type_lines(self) -> None:
         val_line: list[str] = self.check_line()
 
         for line in val_line:
             if line.startswith("hub:"):
                 self.parse_hub(line)
-            elif line.startswith("nb_drones:"):
-                self.parse_nb(line)
-            elif line.startswith("end_hub:"):
-               self.end_hub = self.parse_hub(line)
-               self.end_hub.max_drones = float("inf")
+
             elif line.startswith("start_hub:"):
                 self.start_hub = self.parse_hub(line)
                 self.start_hub.max_drones = float("inf")
+            elif line.startswith("end_hub:"):
+                self.end_hub = self.parse_hub(line)
+                self.end_hub.max_drones = float("inf")
+            elif line.startswith("nb_drones:"):
+                self.parse_nb(line)
             elif line.startswith("connection:"):
-                self.parse_connect(line)
+                continue
             else:
                 print("UNKNOW")
                 sys.exit(1)
 
+        for line in val_line:
+            if line.startswith("connection:"):
+                self.parse_connect(line)
