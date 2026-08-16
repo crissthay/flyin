@@ -38,6 +38,7 @@ class Simulation:
                 neighbors.append(conn.hub1)
         return neighbors
     
+
     def dijkstra(self):
         distances = {
             hub: (float('inf'), 0)
@@ -59,7 +60,16 @@ class Simulation:
         while queue:
             current_dis, current_priority, _, current_hub = heapq.heappop(queue)
 
-            if current_dis > distances[current_hub][0]:
+            current_priority = -current_priority
+
+            if (
+                current_dis > distances[current_hub][0]
+                or
+                (
+                    current_dis == distances[current_hub][0]
+                    and current_priority < distances[current_hub][1]
+                )
+            ):
                 continue
 
             for neighbor in self.get_neighbors(current_hub):
@@ -118,9 +128,9 @@ class Simulation:
             current = parent[current]
 
         path.reverse()
-        print(path)
         return path
-    
+
+        
     def check_connect(self, hub1, hub2):
         for connect in self.connections:
             if (
@@ -163,13 +173,17 @@ class Simulation:
         ):
             print(f"\nTURN {turn}")
 
+            # Drones que estavam em zona restricted
+            # terminam a viagem
             for drone in self.drone_list:
+
                 if not drone.in_transit:
                     continue
 
                 drone.remaining_turns -= 1
 
                 if drone.remaining_turns == 0:
+
                     drone.target.add_drone(drone)
                     drone.location = drone.target
 
@@ -185,6 +199,7 @@ class Simulation:
 
             moves = []
 
+            # Descobrir os movimentos deste turno
             for drone in self.drone_list:
 
                 if drone.location == self.end_hub:
@@ -192,11 +207,14 @@ class Simulation:
 
                 if drone.in_transit:
                     continue
+
                 indice = path.index(drone.location)
+
                 if indice == len(path) - 1:
                     continue
 
                 next_hub = path[indice + 1]
+
                 connection = self.check_connect(
                     drone.location,
                     next_hub
@@ -208,9 +226,9 @@ class Simulation:
 
             moved = False
 
+            # Executar os movimentos
             for drone, next_hub, connection in moves:
 
-                # blockeddd 
                 if next_hub.is_blocked():
                     continue
 
@@ -262,6 +280,7 @@ class Simulation:
 
                 moved = True
 
+            # As connections são usadas apenas durante o turno
             for connection in self.connections:
                 connection.drones.clear()
 
