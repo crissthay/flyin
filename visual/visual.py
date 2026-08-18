@@ -64,6 +64,7 @@ class Visual:
             star[2] += 0.10 * speed
     
     def draw_hubs(self):
+        
         planet_original = pygame.image.load(
             'visual/planetfinal.png'
         ).convert_alpha()
@@ -99,7 +100,7 @@ class Visual:
             gray,
             (90, 60)
         )
-
+    
         for hub in self.hubs:
             x = hub.x * 100
             y = hub.y * 100
@@ -116,9 +117,7 @@ class Visual:
 
                 continue
 
-            # Começa SEMPRE com uma cópia limpa
             planet = planet_original.copy()
-
             if hub.color == "red":
                 planet.fill(
                     (255, 0, 0),
