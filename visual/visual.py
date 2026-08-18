@@ -64,53 +64,115 @@ class Visual:
             star[2] += 0.10 * speed
     
     def draw_hubs(self):
-        planet = pygame.image.load('visual/planetfinal.png')
-        planet = pygame.transform.scale(planet, (90, 60))
-        planet_original = pygame.image.load('visual/planetfinal.png').convert_alpha()
-        planet_original = pygame.transform.scale(planet_original, (90, 60))
-        start_end = pygame.image.load('visual/start_endbg.png')
-        start_end = pygame.transform.scale(start_end, (100, 70))
-        yellow = pygame.image.load('visual/planetyellow.png')
-        yellow = pygame.transform.scale(yellow, (90, 60))
-        gray = pygame.image.load('visual/planetgray.png')
-        gray = pygame.transform.scale(gray, (90, 60))
+        planet_original = pygame.image.load(
+            'visual/planetfinal.png'
+        ).convert_alpha()
 
-        for hub in self.hubs: #problema
+        planet_original = pygame.transform.scale(
+            planet_original,
+            (90, 60)
+        )
+
+        start_end = pygame.image.load(
+            'visual/start_endbg.png'
+        ).convert_alpha()
+
+        start_end = pygame.transform.scale(
+            start_end,
+            (100, 70)
+        )
+
+        yellow = pygame.image.load(
+            'visual/planetyellow.png'
+        ).convert_alpha()
+
+        yellow = pygame.transform.scale(
+            yellow,
+            (90, 60)
+        )
+
+        gray = pygame.image.load(
+            'visual/planetgray.png'
+        ).convert_alpha()
+
+        gray = pygame.transform.scale(
+            gray,
+            (90, 60)
+        )
+
+        for hub in self.hubs:
             x = hub.x * 100
             y = hub.y * 100
 
             if hub == self.start_hub or hub == self.end_hub:
-                offset_y = math.sin(pygame.time.get_ticks() * 0.002) * 2
-                self.screen.blit(start_end, (x, y + offset_y))
-            else:
-                if hub.color == "red":
-                    planet.fill((255, 0, 0), special_flags=pygame.BLEND_RGBA_MULT)
-                    self.screen.blit(planet, (x, y))
-                elif hub.color == "green":
-                    planet.fill((0, 255, 0), special_flags=pygame.BLEND_RGBA_MULT)
-                    self.screen.blit(planet, (x, y))
-                elif hub.color == "yellow":
-                    planet.fill((255, 255, 0), special_flags=pygame.BLEND_RGBA_MULT)
-                    self.screen.blit(yellow, (x, y))
-                elif hub.color == "blue":
-                    planet.fill((0, 0, 255), special_flags=pygame.BLEND_RGBA_MULT)
-                    self.screen.blit(planet, (x, y))
-                elif hub.color == "gray":
-                    self.screen.blit(gray, (x, y))
-                elif hub.color == "pink":
-                    planet.fill((255, 20, 147), special_flags=pygame.BLEND_RGBA_MULT)
-                    self.screen.blit(planet, (x, y))
-                elif hub.color == "rainbow":
-                    planet = planet_original.copy()
-                    rgb = colorsys.hsv_to_rgb(self.hue, 1, 1)
-                    rainbow_color = tuple(int(c * 255) for c in rgb)
-                    planet.fill((*rainbow_color, 255), special_flags=pygame.BLEND_RGBA_MULT)
-                    self.screen.blit(planet, (x, y))
-                else:
-                    self.screen.blit(planet, (x, y))
+                offset_y = math.sin(
+                    pygame.time.get_ticks() * 0.002
+                ) * 2
 
-            self.hue = (self.hue + 0.005) % 1
-        
+                self.screen.blit(
+                    start_end,
+                    (x, y + offset_y)
+                )
+
+                continue
+
+            # Começa SEMPRE com uma cópia limpa
+            planet = planet_original.copy()
+
+            if hub.color == "red":
+                planet.fill(
+                    (255, 0, 0),
+                    special_flags=pygame.BLEND_RGBA_MULT
+                )
+
+            elif hub.color == "green":
+                planet.fill(
+                    (0, 255, 0),
+                    special_flags=pygame.BLEND_RGBA_MULT
+                )
+
+            elif hub.color == "blue":
+                planet.fill(
+                    (0, 0, 255),
+                    special_flags=pygame.BLEND_RGBA_MULT
+                )
+
+            elif hub.color == "pink":
+                planet.fill(
+                    (255, 20, 147),
+                    special_flags=pygame.BLEND_RGBA_MULT
+                )
+
+            elif hub.color == "yellow":
+                planet = yellow
+
+            elif hub.color == "gray":
+                planet = gray
+
+            elif hub.color == "rainbow":
+                rgb = colorsys.hsv_to_rgb(
+                    self.hue,
+                    1,
+                    1
+                )
+
+                rainbow_color = tuple(
+                    int(c * 255)
+                    for c in rgb
+                )
+
+                planet.fill(
+                    (*rainbow_color, 255),
+                    special_flags=pygame.BLEND_RGBA_MULT
+                )
+
+            # None / sem cor → planet original
+            self.screen.blit(
+                planet,
+                (x, y)
+            )
+
+        self.hue = (self.hue + 0.005) % 1
     def draw_drones(self):
         drone_img = pygame.image.load(
             'visual/drone.png'

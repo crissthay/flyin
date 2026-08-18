@@ -52,10 +52,14 @@ class Parse:
         zone: str = "normal"
         color: Optional[str] = None
         max_drones: int = 1
+
         splited_meta: list[str] = line.strip().split()
         meta: list[str] = splited_meta[4:]
         for item in meta:
             item = item.strip("[]")
+            if "=" not in item:
+                print("ERRO - Invalid metadata format")
+                sys.exit(1)
             key, value = item.split("=")
             if key == "zone":
                 if value in zone_valid:
