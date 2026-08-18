@@ -44,6 +44,24 @@ class Visual:
             pygame.display.update()
 
         pygame.quit()
+    def map_to_screen(self, x, y):
+        scale = 100
+
+        min_x = min(hub.x for hub in self.hubs)
+        max_x = max(hub.x for hub in self.hubs)
+        min_y = min(hub.y for hub in self.hubs)
+        max_y = max(hub.y for hub in self.hubs)
+
+        map_center_x = (min_x + max_x) / 2
+        map_center_y = (min_y + max_y) / 2
+
+        screen_center_x = self.width / 2
+        screen_center_y = self.height / 2
+
+        screen_x = screen_center_x + (x - map_center_x) * scale
+        screen_y = screen_center_y + (y - map_center_y) * scale
+
+        return screen_x, screen_y
 
     def draw_connections(self):
         pass
@@ -102,9 +120,7 @@ class Visual:
         )
     
         for hub in self.hubs:
-            x = hub.x * 100
-            y = hub.y * 100
-
+            x, y = self.map_to_screen(hub.x, hub.y)
             if hub == self.start_hub or hub == self.end_hub:
                 offset_y = math.sin(
                     pygame.time.get_ticks() * 0.002
@@ -165,7 +181,6 @@ class Visual:
                     special_flags=pygame.BLEND_RGBA_MULT
                 )
 
-            # None / sem cor → planet original
             self.screen.blit(
                 planet,
                 (x, y)
@@ -181,6 +196,8 @@ class Visual:
         )
 
         for drone in self.drone_list:
-            x = drone.location.x * 100
-            y = drone.location.y * 100
+            x, y = self.map_to_screen(
+                drone.location.x,
+                drone.location.y
+            )
             self.screen.blit(drone_img, (x, y))
