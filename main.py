@@ -6,7 +6,6 @@ import sys
 
 
 def main():
-    #try:
     if len(sys.argv) < 2:
         print("ERROR - no argument found")
         sys.exit(1)
@@ -15,12 +14,14 @@ def main():
     config.open_read_file()
     config.type_lines()
 
-    s = Simulation(config.hubs,
+    s = Simulation(
+        config.hubs,
         config.connections,
         config.nb_drones,
         config.start_hub,
         config.end_hub,
-        )
+    )
+
     s.create_drones()
     s.simulate()
 
@@ -28,13 +29,13 @@ def main():
         config.hubs,
         config.start_hub,
         config.end_hub,
-        s.drone_list
+        s.drone_list,
+        config.connections,
+        s,
     )
-    visual.load_images()
-    
-    
-    #except:
-        #pass
-        
+
+    visual.run()
+
+
 if __name__ == '__main__':
     main()

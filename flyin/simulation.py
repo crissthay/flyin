@@ -41,9 +41,6 @@ class Simulation:
         return self._adj[hub]
 
     def dijkstra_from(self, source: Hub) -> dict[Hub, Optional[Hub]]:
-        """Shortest path tree from `source`, honouring zone costs and
-        blocked zones. Returns a parent map (next-hop resolved via
-        rebuild_path) t.t"""
         distances: dict[Hub, tuple[float, int]] = {
             hub: (float("inf"), 0) for hub in self.hubs
         }
@@ -106,9 +103,6 @@ class Simulation:
         return path
 
     def next_hop(self, drone: Drone) -> Optional[Hub]:
-        """Recompute the shortest path from the drone's current
-        location every turn, so it can reroute if its previous
-        next hop is currently blocked/full."""
         parent = self.dijkstra_from(drone.location)
         path = self.rebuild_path(parent, drone.location, self.end_hub)
         if len(path) < 2:
@@ -123,18 +117,32 @@ class Simulation:
                 return connect
         return None
 
-    def simulate(self) -> None:
-        turn = 1
+    def is_done(self) -> bool:
+        return all(drone.location == self.end_hub for drone in self.drone_list)
 
+    def simulate(self) -> None:
         parent = self.dijkstra_from(self.start_hub)
         if self.end_hub not in parent:
             print("Can't move: no path to destination.")
             return
 
-        while any(drone.location != self.end_hub for drone in self.drone_list):
+        self.turn = 1
+        while not self.is_done():
+            if not self.step():
+                break
+
+    def step(self) -> bool:
+       
+        if not hasattr(self, "turn"):
+            self.turn = 1
+
+        if self.is_done():
+            return False
+
+        turn = self.turn
+        if True:
             print(f"\nTURN {turn}")
 
-            #mano espero que esteja certo dessa vez
             for drone in self.drone_list:
                 if not drone.in_transit:
                     continue
@@ -173,6 +181,7 @@ class Simulation:
 
             moved = False
 
+   
             for drone, next_hub, connection in moves:
                 if next_hub.is_blocked():
                     continue
@@ -208,8 +217,9 @@ class Simulation:
 
                 moved = True
 
-            if not moved:
+            if not moved and not any(d.in_transit for d in self.drone_list):
                 print("Can't move anymore.")
-                break
+                return False
 
-            turn += 1
+            self.turn += 1
+            return True

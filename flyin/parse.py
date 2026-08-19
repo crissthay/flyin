@@ -13,7 +13,14 @@ color_valid: list[str] = [
     "purple",
     "gray",
     "pink",
-    "rainbow"
+    "rainbow",
+    "magenta",
+    "cyan",
+    "orange",
+    "brown",
+    "lime",
+    "gold",
+    "silver",
 ]
 class Parse:
     def __init__(self, file: str) -> None:
