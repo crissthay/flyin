@@ -16,8 +16,17 @@ COLOR_RGB = {
     "lime": (144, 238, 144)
 }
 
+
 class Visual:
-    def __init__(self, hubs, start_hub, end_hub, drones, connections, simulation=None):
+    def __init__(
+            self,
+            hubs,
+            start_hub,
+            end_hub,
+            drones,
+            connections,
+            simulation=None
+            ):
         pygame.init()
 
         self.width = 1000
@@ -55,29 +64,38 @@ class Visual:
 
     def _load_images(self) -> None:
         self.back = pygame.transform.scale(
-            pygame.image.load("visual/galaxybg.jpeg"), (self.width, self.height)
+            pygame.image.load("visual/galaxybg.jpeg"),
+            (self.width, self.height)
         )
         self.planet_original = pygame.transform.scale(
-            pygame.image.load("visual/planetfinal.png").convert_alpha(), (90, 60)
+            pygame.image.load("visual/planetfinal.png").convert_alpha(),
+            (90, 60)
         )
         self.start_end_img = pygame.transform.scale(
-            pygame.image.load("visual/start_endbg.png").convert_alpha(), (100, 70)
+            pygame.image.load("visual/start_endbg.png").convert_alpha(),
+            (100, 70)
         )
         self.yellow_img = pygame.transform.scale(
-            pygame.image.load("visual/planetyellow.png").convert_alpha(), (90, 60)
+            pygame.image.load("visual/planetyellow.png").convert_alpha(),
+            (90, 60)
         )
         self.gray_img = pygame.transform.scale(
-            pygame.image.load("visual/planetgray.png").convert_alpha(), (90, 60)
+            pygame.image.load("visual/planetgray.png").convert_alpha(),
+            (90, 60)
         )
         self.drone_img = pygame.transform.scale(
-            pygame.image.load("visual/drone.png").convert_alpha(), (90, 60)
+            pygame.image.load("visual/drone.png").convert_alpha(),
+            (90, 60)
         )
         self.cyan_img = pygame.transform.scale(
-            pygame.image.load("visual/cyanplanet.png").convert_alpha(), (90, 60)
+            pygame.image.load("visual/cyanplanet.png").convert_alpha(),
+            (90, 60)
         )
         self.brown_image = pygame.transform.scale(
-            pygame.image.load("visual/browplanet.png").convert_alpha(), (90, 60)
+            pygame.image.load("visual/browplanet.png").convert_alpha(),
+            (90, 60)
         )
+
     def map_to_screen(self, x: int, y: int) -> tuple[float, float]:
         screen_center_x = self.width / 2
         screen_center_y = self.height / 2
@@ -92,7 +110,9 @@ class Visual:
             x1, y1 = self.map_to_screen(conn.hub1.x, conn.hub1.y)
             x2, y2 = self.map_to_screen(conn.hub2.x, conn.hub2.y)
             pygame.draw.line(
-                self.screen, (150, 150, 200), (x1 + 45, y1 + 30), (x2 + 45, y2 + 30), 2
+                self.screen, (150, 150, 200),
+                (x1 + 45, y1 + 30),
+                (x2 + 45, y2 + 30), 2
             )
 
     def draw_stars(self) -> None:
@@ -197,7 +217,6 @@ class Visual:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.loop = False
-
 
             keys = pygame.key.get_pressed()
 

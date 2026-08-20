@@ -1,5 +1,5 @@
 import sys
-from typing import Optional
+from typing import Optional, Any, Union
 from flyin.hub import Hub
 from flyin.conect import Connection
 
@@ -22,19 +22,20 @@ color_valid: list[str] = [
     "gold",
     "silver",
 ]
+
+
 class Parse:
     def __init__(self, file: str) -> None:
-       self.file = file
-       self.lines_list = []
-       self.nb_drones = None
-       self.hubs = []
-       self.connections = []
-       self.start_hub = None
-       self.end_hub = None
-
+        self.file: str = file
+        self.lines_list: list[str] = []
+        self.nb_drones: Optional[int] = None
+        self.hubs: list[Hub] = []
+        self.connections: list[Connection] = []
+        self.start_hub: Optional[Hub] = None
+        self.end_hub: Optional[Hub] = None
 
     def open_read_file(self) -> list[str]:
-        try: 
+        try:
             with open(self.file, encoding="utf-8") as file:
                 for line in file:
                     self.lines_list.append(line.strip())
@@ -42,7 +43,6 @@ class Parse:
             print("ERRO - File not found")
             sys.exit(1)
         return self.lines_list
-
 
     def check_line(self) -> list[str]:
         val_lines: list[str] = []
@@ -89,18 +89,18 @@ class Parse:
             else:
                 print("ERRO - Metadata doesn't exist")
                 sys.exit(1)
-            
+
         return {
             "zone": zone,
             "color": color,
             "max_drones": max_drones
         }
-    
+
     def meta_connect(self, line: str) -> dict:
         capacity = float("inf")
 
-        splited_meta = line.strip().split()
-        meta = splited_meta[2:]
+        splited_meta: list[str] = line.strip().split()
+        meta: list[str] = splited_meta[2:]
 
         for item in meta:
             item = item.strip("[]")
@@ -112,7 +112,7 @@ class Parse:
         return {
             "max_link_capacity": capacity
         }
-        
+
     def parse_nb(self, line: str):
         splited_nb: list[str] = line.strip().split()
         if len(splited_nb) != 2:
@@ -124,10 +124,10 @@ class Parse:
         try:
             self.nb_drones = int(int_)
         except ValueError:
-            print(f"ERRO  - Must to be an interger number")
+            print("ERRO  - Must to be an interger number")
             sys.exit(1)
 
-        if  self.nb_drones < 0:
+        if self.nb_drones < 0:
             print("NB_drones can't be negative")
             sys.exit(1)
 
@@ -138,12 +138,12 @@ class Parse:
             sys.exit(1)
         name: str = splited_se[1]
         try:
-            x = int(splited_se[2])
-            y = int(splited_se[3])
+            x: int = int(splited_se[2])
+            y: int = int(splited_se[3])
         except ValueError:
             print("ERRO - Format must to bem (name, x, y)")
             sys.exit(1)
-        info = self.metadata(line)
+        info: dict[str, Any] = self.metadata(line)
         hub = Hub(
             name,
             x,
@@ -153,15 +153,15 @@ class Parse:
             info["max_drones"])
         self.hubs.append(hub)
         return hub
-    
+
     def find_hub(self, name: str) -> None:
         for hub in self.hubs:
             if hub.name == name:
                 return hub
         return None
-        
+
     def parse_connect(self, line):
-        splited_connect = line.strip().split()
+        splited_connect: list[str] = line.strip().split()
         if len(splited_connect) < 2:
             print("ERRO - Miss args")
             sys.exit(1)
@@ -175,14 +175,13 @@ class Parse:
         except ValueError:
             print("ERRO - Invalid connection format")
             sys.exit(1)
-        info = self.meta_connect(line)
+        info: dict[str, Union[int, float]] = self.meta_connect(line)
         connection = Connection(
             hub1_obj,
             hub2_obj,
             info["max_link_capacity"]
         )
-        self.connections.append(connection)  
-
+        self.connections.append(connection)
 
     def type_lines(self) -> None:
         val_line: list[str] = self.check_line()
