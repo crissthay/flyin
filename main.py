@@ -6,11 +6,17 @@ import sys
 
 
 def main():
-    if len(sys.argv) < 2:
+    args = sys.argv[1:]
+
+    capacity_info = "--capacity-info" in args
+    if capacity_info:
+        args.remove("--capacity-info")
+
+    if len(args) < 1:
         print("ERROR - no argument found")
         sys.exit(1)
 
-    config = Parse(sys.argv[1])
+    config = Parse(args[0])
     config.open_read_file()
     config.type_lines()
 
@@ -23,7 +29,7 @@ def main():
     )
 
     s.create_drones()
-    s.simulate()
+    s.simulate(capacity_info=capacity_info)
 
     visual = Visual(
         config.hubs,
@@ -33,7 +39,6 @@ def main():
         config.connections,
         s,
     )
-
     visual.run()
 
 

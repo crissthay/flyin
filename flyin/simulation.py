@@ -20,10 +20,11 @@ class Simulation:
         self.start_hub: Hub = start_hub
         self.end_hub: Hub = end_hub
         self.drone_list: list[Drone] = []
+        self.history: list[list[tuple[str, Hub, Hub]]] = []
 
     def create_drones(self):
         for i in range(self.nb_drones):
-            name_drone: str = f"drone_{i}"
+            name_drone: str = f"\nD{i}"
             new_drone: Drone = Drone(name_drone, self.start_hub)
             self.start_hub.add_drone(new_drone)
             self.drone_list.append(new_drone)
@@ -172,7 +173,21 @@ class Simulation:
             return True
         return False
 
-    def simulate(self):
+    def print_capacity_info(self) -> None:
+        for hub in self.hubs:
+            cap = hub.max_drones
+            cap_str = "inf" if cap == float("inf") else str(int(cap))
+            print(f"Zone {hub.name}: {len(hub.drones)}/{cap_str} drones")
+
+        for conn in self.connections:
+            cap = conn.max_link_capacity
+            cap_str = "inf" if cap == float("inf") else str(int(cap))
+            print(
+                f"Connection {conn.hub1.name}-{conn.hub2.name}: "
+                f"{len(conn.drones)}/{cap_str} capacity used"
+            )
+
+    def simulate(self, capacity_info: bool = False):
         path: list[Hub] = self.dijkstra()
         turn: int = 1
 
@@ -184,7 +199,11 @@ class Simulation:
             drone.location != self.end_hub
             for drone in self.drone_list
         ):
-            print(f"\nTURN {turn}")
+            turn_output: list[str] = []
+
+            turn_moves: list[tuple[str, Hub, Hub]] = []
+
+            already_acted: set[Drone] = set()
 
             for drone in self.drone_list:
 
@@ -198,18 +217,27 @@ class Simulation:
                     drone.target.add_drone(drone)
                     drone.location = drone.target
 
+                    if drone.connection is not None:
+                        drone.connection.remove_drone(drone)
+
                     drone.in_transit = False
                     drone.target = None
                     drone.connection = None
 
-                    print(
-                        drone.id_name,
-                        "arrived at",
-                        drone.location.name
+                    already_acted.add(drone)
+
+                    turn_output.append(
+                        f"{drone.id_name}-{drone.location.name}"
                     )
 
-            moves: list[tuple[Drone, Hub, Optional[Connection]]] = []
+            moves: list[
+                tuple[Drone, Hub, Optional[Connection]]
+            ] = []
+
             for drone in self.drone_list:
+
+                if drone in already_acted:
+                    continue
 
                 if drone.location == self.end_hub:
                     continue
@@ -235,7 +263,6 @@ class Simulation:
 
             moved = False
 
-            # Executar os movimentos
             for drone, next_hub, connection in moves:
 
                 if next_hub.is_blocked():
@@ -244,20 +271,16 @@ class Simulation:
                 if connection.is_full_connect():
                     continue
 
-                leaving = sum(
-                    1
-                    for d, _, _ in moves
-                    if d.location == next_hub
-                )
-
                 available_space = (
                     next_hub.max_drones
                     - len(next_hub.drones)
-                    + leaving
                 )
 
                 if available_space <= 0:
                     continue
+
+                # GUARDAR DE ONDE O DRONE SAIU
+                start_hub = drone.location
 
                 connection.add_drone(drone)
                 drone.location.remove_drone(drone)
@@ -269,32 +292,45 @@ class Simulation:
                     drone.remaining_turns = 1
                     drone.connection = connection
 
-                    print(
-                        drone.id_name,
-                        "->",
-                        next_hub.name,
-                        "(restricted)"
+                    turn_output.append(
+                        f"{drone.id_name}-"
+                        f"{start_hub.name}-{next_hub.name}"
                     )
 
                 else:
 
                     next_hub.add_drone(drone)
                     drone.location = next_hub
+                    connection.remove_drone(drone)
 
-                    print(
-                        drone.id_name,
-                        "->",
-                        next_hub.name
+                    turn_output.append(
+                        f"{drone.id_name}-{next_hub.name}"
                     )
+
+                #GUARDAR MOVIMENTO
+                turn_moves.append(
+                    (
+                        drone.id_name,
+                        start_hub,
+                        next_hub
+                    )
+                )
 
                 moved = True
 
-            # As connections são usadas apenas durante o turno
-            for connection in self.connections:
-                connection.drones.clear()
-
-            if not moved:
+            if not turn_output and not any(
+                d.in_transit for d in self.drone_list
+            ):
                 print("Can't move anymore.")
                 break
+
+            if turn_output:
+                print(" ".join(turn_output))
+
+            if capacity_info:
+                self.print_capacity_info()
+                print()
+
+            self.history.append(turn_moves)
 
             turn += 1

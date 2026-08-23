@@ -1,5 +1,4 @@
-from typing import Optional
-
+from typing import Optional, Union
 
 class Hub():
     def __init__(
@@ -16,11 +15,8 @@ class Hub():
         self.y = y
         self.color = color
         self.zone = zone
-        self.max_drones = max_drones
-        self.drones = []
-
-    def __repr__(self):
-        return f"Hub({self.name}, {self.x}, {self.y})"
+        self.max_drones: int = max_drones
+        self.drones: list[Drone] = []
 
     def is_blocked(self) -> bool:
         return self.zone == "blocked"

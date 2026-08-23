@@ -1,0 +1,60 @@
+*This project has been created as part of the 42 curriculum by tmontezu.*
+VOU ESCREVER DEPOIS
+# Fly-in
+
+## Description
+
+<!-- TODO: o que é o projeto, objetivo geral (rotear drones do start ao
+end respeitando capacidade de zona/conexão, custo por tipo de zona,
+minimizando turnos), visão geral rápida. -->
+
+## Instructions
+
+<!-- TODO:
+- Como instalar dependências (make install)
+- Como rodar (make run / python3 main.py <map>)
+- Flag --capacity-info: como usar
+- Como rodar o visual (pygame) vs modo só-terminal
+- Requisitos (Python 3.10+, pygame, etc)
+-->
+
+## Algorithm explanation
+
+<!-- TODO: obrigatório pela ficha de avaliação. Precisa cobrir:
+- Qual algoritmo de pathfinding (Dijkstra com prioridade dupla:
+  distância + zonas "priority")
+- Como você decidiu resolver capacidade (path único global +
+  checagem de available_space por turno)
+- Complexidade (O(?) por chamada de dijkstra, quantas vezes roda)
+- Trade-offs conhecidos: path único vs multi-path (menciona que
+  mapas com gargalo de max_drones=1 no meio forçam fila serial,
+  já que só existe 1 caminho calculado)
+- Como zonas restricted (2 turnos) e priority são tratadas
+-->
+
+## Visual representation
+
+<!-- TODO: obrigatório pela ficha. Precisa cobrir:
+- pygame, cores por zona (mapeamento de cores do arquivo pro sprite)
+- Animação turno a turno (history + lerp)
+- Como isso ajuda a entender a simulação
+- Controles (WASD/setas pra câmera, Q/E pra zoom)
+-->
+
+## Example input and expected output
+
+<!-- TODO: obrigatório pela ficha. Cola um mapa pequeno (ex: Easy
+Level 1) e o output real correspondente, formato "D<ID>-<zone>" por
+turno. -->
+
+## Resources
+
+<!-- TODO: obrigatório. Lista:
+- Documentação/artigos sobre Dijkstra que você consultou
+- Documentação do pygame
+- Como IA foi usada: para quais tarefas, quais partes do projeto
+  (ex: debug de bugs de concorrência no scheduling de drones,
+  revisão de type hints pro mypy, estrutura do README) — seja
+  específico sobre o que VOCÊ entendeu e decidiu vs o que a IA
+  sugeriu, já que isso é cobrado na defesa.
+-->

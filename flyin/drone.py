@@ -1,6 +1,6 @@
-from flyin.hub import Hub
+from .hub import Hub
 from typing import Optional
-from flyin.conect import Connection
+from .conect import Connection
 
 
 class Drone:

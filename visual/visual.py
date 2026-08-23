@@ -52,6 +52,10 @@ class Visual:
         self.drone_list = drones
         self.stars = []
         self.hue = 0.0
+        self.animation_turn = 0
+        self.animation_progress = 0.0
+        self.history = simulation.history if simulation else []
+
 
         for _ in range(100):
             x = random.randint(0, self.width)
@@ -203,12 +207,94 @@ class Visual:
                 )
                 self.screen.blit(self.drone_img, rect)
 
+    def draw_animation_drones(self) -> None:
+        if self.animation_turn >= len(self.history):
+            return
+
+        current_moves = self.history[self.animation_turn]
+
+        moving_ids = {
+            drone_id
+            for drone_id, _, _ in current_moves
+        }
+
+        #Drones que n estão mover neste turno!!
+        #s desenhados na posição do turno anterior
+        if self.animation_turn == 0:
+            previous_positions = {
+                drone.id_name: self.start_hub
+                for drone in self.drone_list
+            }
+        else:
+            previous_positions = {}
+
+            for turn_moves in self.history[:self.animation_turn]:
+                for drone_id, _, target in turn_moves:
+                    previous_positions[drone_id] = target
+
+        for drone in self.drone_list:
+
+            if drone.id_name in moving_ids:
+                continue
+
+            hub = previous_positions.get(
+                drone.id_name,
+                self.start_hub
+            )
+
+            x, y = self.map_to_screen(
+                hub.x,
+                hub.y
+            )
+
+            rect = self.drone_img.get_rect(
+                center=(x + 45, y + 30)
+            )
+
+            self.screen.blit(
+                self.drone_img,
+                rect
+            )
+
+        #Drones que ESTao mover
+        for drone_id, start_hub, target_hub in current_moves:
+
+            start_x, start_y = self.map_to_screen(
+                start_hub.x,
+                start_hub.y
+            )
+
+            target_x, target_y = self.map_to_screen(
+                target_hub.x,
+                target_hub.y
+            )
+
+            x = (
+                start_x
+                + (target_x - start_x)
+                * self.animation_progress
+            )
+
+            y = (
+                start_y
+                + (target_y - start_y)
+                * self.animation_progress
+            )
+
+            rect = self.drone_img.get_rect(
+                center=(x + 45, y + 30)
+            )
+
+            self.screen.blit(
+                self.drone_img,
+                rect
+            )
     def render_frame(self) -> None:
         self.screen.blit(self.back, (0, 0))
         self.draw_connections()
         self.draw_stars()
         self.draw_hubs()
-        self.draw_drones()
+        self.draw_animation_drones()
         pygame.display.update()
         self.clock.tick(30)
 
@@ -234,7 +320,12 @@ class Visual:
                 self.zoom -= self.zoom_speed
 
             self.zoom = max(20, min(self.zoom, 300))
+            if self.animation_turn < len(self.history):
+                self.animation_progress += 0.03
 
+                if self.animation_progress >= 1.0:
+                    self.animation_progress = 0.0
+                    self.animation_turn += 1
             self.render_frame()
 
         pygame.quit()
