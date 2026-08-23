@@ -1,4 +1,8 @@
-from typing import Optional, Union
+from typing import Optional, Union, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .drone import Drone
+
 
 class Hub():
     def __init__(
@@ -8,14 +12,14 @@ class Hub():
                 y: int,
                 color: Optional[str] = None,
                 zone: str = "normal",
-                max_drones: int = 1
+                max_drones: Union[int, float] = 1
                 ) -> None:
-        self.name = name
-        self.x = x
-        self.y = y
-        self.color = color
-        self.zone = zone
-        self.max_drones: int = max_drones
+        self.name: str = name
+        self.x: int = x
+        self.y: int = y
+        self.color: Optional[str] = color
+        self.zone: str = zone
+        self.max_drones: Union[int, float] = max_drones
         self.drones: list[Drone] = []
 
     def is_blocked(self) -> bool:

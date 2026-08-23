@@ -19,6 +19,9 @@ def main():
     config = Parse(args[0])
     config.open_read_file()
     config.type_lines()
+    assert config.nb_drones is not None
+    assert config.start_hub is not None
+    assert config.end_hub is not None
 
     s = Simulation(
         config.hubs,

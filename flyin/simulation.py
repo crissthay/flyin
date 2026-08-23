@@ -22,7 +22,7 @@ class Simulation:
         self.drone_list: list[Drone] = []
         self.history: list[list[tuple[str, Hub, Hub]]] = []
 
-    def create_drones(self):
+    def create_drones(self) -> None:
         for i in range(self.nb_drones):
             name_drone: str = f"\nD{i}"
             new_drone: Drone = Drone(name_drone, self.start_hub)
@@ -121,7 +121,7 @@ class Simulation:
         if self.end_hub not in parent:
             return []
 
-        current = self.end_hub
+        current: Optional[Hub] = self.end_hub
 
         while current is not None:
             path.append(current)
@@ -145,7 +145,7 @@ class Simulation:
         print("PATH:", path)
         return path
 
-    def check_connect(self, hub1, hub2):
+    def check_connect(self, hub1, hub2) -> Optional[Connection]:
         for connect in self.connections:
             if (
                 (connect.hub1 == hub1 and connect.hub2 == hub2)
@@ -155,7 +155,7 @@ class Simulation:
                 return connect
         return None
 
-    def move_drone(self, drone, next_hub) -> bool:
+    def move_drone(self, drone: Drone, next_hub: Hub) -> bool:
         current = drone.location
         connection = self.check_connect(current, next_hub)
         if connection is None:
@@ -213,6 +213,7 @@ class Simulation:
                 drone.remaining_turns -= 1
 
                 if drone.remaining_turns == 0:
+                    assert drone.target is not None
 
                     drone.target.add_drone(drone)
                     drone.location = drone.target
@@ -261,9 +262,9 @@ class Simulation:
                     (drone, next_hub, connection)
                 )
 
-            moved = False
-
             for drone, next_hub, connection in moves:
+                if connection is None:
+                    continue
 
                 if next_hub.is_blocked():
                     continue
@@ -307,7 +308,6 @@ class Simulation:
                         f"{drone.id_name}-{next_hub.name}"
                     )
 
-                #GUARDAR MOVIMENTO
                 turn_moves.append(
                     (
                         drone.id_name,
@@ -315,8 +315,6 @@ class Simulation:
                         next_hub
                     )
                 )
-
-                moved = True
 
             if not turn_output and not any(
                 d.in_transit for d in self.drone_list
