@@ -142,7 +142,7 @@ class Simulation:
 
         print("COST:", total_cost)
         print("PRIORITY:", total_priority)
-        print("PATH:", path)
+        print("PATH:", [hub.name for hub in path])
         return path
 
     def check_connect(self, hub1, hub2) -> Optional[Connection]:
@@ -280,7 +280,7 @@ class Simulation:
                 if available_space <= 0:
                     continue
 
-                # GUARDAR DE ONDE O DRONE SAIU
+                # GUARDAR DE ONDE O DRONE SAIU para depois
                 start_hub = drone.location
 
                 connection.add_drone(drone)

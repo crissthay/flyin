@@ -1,60 +1,83 @@
 *This project has been created as part of the 42 curriculum by tmontezu.*
-VOU ESCREVER DEPOIS
+
 # Fly-in
 
 ## Description
 
-<!-- TODO: o que é o projeto, objetivo geral (rotear drones do start ao
-end respeitando capacidade de zona/conexão, custo por tipo de zona,
-minimizando turnos), visão geral rápida. -->
+Flyin is a project that simulates a "drone." Within the project, we have zones represented by hubs that are connected to each other, and the goal is to move N drones.
+
+However, what makes the problem more challenging is that each zone (hub) has a capacity, and its connections can also have capacity limits. Each type of zone has a different movement cost:
+
+**Normal = 1
+Priority = 1
+Restricted = 2
+Blocked = cannot be traversed**
+
+The final objective is to move the drones from the starting hub to the destination hub with the lowest possible cost.
+
 
 ## Instructions
 
-<!-- TODO:
-- Como instalar dependências (make install)
-- Como rodar (make run / python3 main.py <map>)
-- Flag --capacity-info: como usar
-- Como rodar o visual (pygame) vs modo só-terminal
-- Requisitos (Python 3.10+, pygame, etc)
--->
+**- make install** = Install dependencies
+
+**- python3 main.py mapa.txt** = Run the program
+
+**- python3 main.py --capacity-info mapa.txt** = Display capacity information
+
+**- W = up, D = right, A = left, S = down, Q/E = zoom in/out** = Screen movement and zoom
+
 
 ## Algorithm explanation
 
-<!-- TODO: obrigatório pela ficha de avaliação. Precisa cobrir:
-- Qual algoritmo de pathfinding (Dijkstra com prioridade dupla:
-  distância + zonas "priority")
-- Como você decidiu resolver capacidade (path único global +
-  checagem de available_space por turno)
-- Complexidade (O(?) por chamada de dijkstra, quantas vezes roda)
-- Trade-offs conhecidos: path único vs multi-path (menciona que
-  mapas com gargalo de max_drones=1 no meio forçam fila serial,
-  já que só existe 1 caminho calculado)
-- Como zonas restricted (2 turnos) e priority são tratadas
--->
+**Dijkstra** was the algorithm chosen because it was the one that most closely matched the project requirements. The algorithm finds the shortest path between two points (`start_hub` and `end_hub`) within a set of points (graphs). In this project, it runs only once, which means that all drones follow the same path.
+
+In this project, it works by checking where the drones want to go and verifying whether the hub has enough capacity. This is done one by one, in order. If the other drones see that the first one was able to pass, they will also proceed. If my hub is restricted, my drone arrives one turn later, respecting the (`max_link_capacity`).
+
+Aven though there are other ways to implement this, I intentionally made a trade-off where all the drones move in queues, creating the visual effect of them lining up. Visually, it may seem slow, but it is not a bug.
+
 
 ## Visual representation
 
-<!-- TODO: obrigatório pela ficha. Precisa cobrir:
-- pygame, cores por zona (mapeamento de cores do arquivo pro sprite)
-- Animação turno a turno (history + lerp)
-- Como isso ajuda a entender a simulação
-- Controles (WASD/setas pra câmera, Q/E pra zoom)
--->
+In this project, I use the **Pygame** library for all the visuals, including the background and PNGs. Some of them are manually edited to change their colors, while others use the RGB values provided by **Pygame**.
+
+My animation does not teleport the drones; they move one step per turn. All of their movements are stored in the (`self.history`) variable.
+
+Since the coordinates can be negative or may not correspond to the size of my screen, I added camera movement using W/D/A/S/Q/E. This prevents the hubs from disappearing off-screen.
+
 
 ## Example input and expected output
 
-<!-- TODO: obrigatório pela ficha. Cola um mapa pequeno (ex: Easy
-Level 1) e o output real correspondente, formato "D<ID>-<zone>" por
-turno. -->
+**Easy example:**  
+
+COST: 4
+PRIORITY: 0
+PATH: ['start', 'upper', 'middle', 'lower', 'goal']
+
+D0-upper  
+D0-middle  
+D1-upper  
+D0-lower  
+D1-middle  
+D2-upper  
+D0-goal  
+D1-lower  
+D2-middle  
+D1-goal   
+D2-lower  
+D2-goal  
 
 ## Resources
 
-<!-- TODO: obrigatório. Lista:
-- Documentação/artigos sobre Dijkstra que você consultou
-- Documentação do pygame
-- Como IA foi usada: para quais tarefas, quais partes do projeto
-  (ex: debug de bugs de concorrência no scheduling de drones,
-  revisão de type hints pro mypy, estrutura do README) — seja
-  específico sobre o que VOCÊ entendeu e decidiu vs o que a IA
-  sugeriu, já que isso é cobrado na defesa.
--->
+**Dijkstra:**  
+- https://www.dio.me/articles/o-algoritmo-de-dijkstra-em-python-encontrando-o-caminho-mais-curto
+- https://youtu.be/EFg3u_E6eHU?si=4gD1FBWMVhogeLuk  
+- https://youtu.be/U3zgFfjVUTw?si=gHSN0l3GQZ_Y5NWT
+
+**Pygame:**  
+- https://youtu.be/blLLtdv4tvo?si=CU4DPeHVa4t_WdlU  
+- https://www.youtube.com/watch?v=BT2cjrxGpWo&list=PLJ8PYFcmwFOxtJS4EZTGEPxMEo4YdbxdQ
+
+**AI USAGE**
+
+- Documentation, translation, explanations, and challenging maps for test 
+(claude)
