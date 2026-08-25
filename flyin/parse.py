@@ -26,6 +26,19 @@ color_valid: list[str] = [
 
 
 class Parse:
+    """Parses and stores the map configuration.
+
+    Attributes:
+        file: Path to the map file.
+        lines_list: List containing the lines read from the map file.
+        nb_drones: Number of drones.
+        hubs: List of hubs in the map.
+        connections: List of connections between hubs.
+        start_hub: Starting hub of the map.
+        end_hub: Destination hub of the map.
+        _seen_connections: Set of connections that have already been processed.
+    """
+
     def __init__(self, file: str) -> None:
         self.file: str = file
         self.lines_list: list[str] = []
@@ -37,6 +50,14 @@ class Parse:
         self._seen_connections: set[tuple[str, str]] = set()
 
     def open_read_file(self) -> list[str]:
+        """Opens the map file and reads its contents.
+
+        Returns:
+            A list containing the lines from the map file.
+
+        Raises:
+            FileNotFoundError: If the map file cannot be found.
+        """
         try:
             with open(self.file, encoding="utf-8") as file:
                 for line in file:
@@ -47,6 +68,11 @@ class Parse:
         return self.lines_list
 
     def check_line(self) -> list[str]:
+        """Filters the map lines by removing empty lines and comments.
+
+        Returns:
+            A list containing only valid, non-empty lines.
+        """
         val_lines: list[str] = []
         for lines in self.lines_list:
             if lines == "" or lines.startswith("#"):
@@ -55,6 +81,17 @@ class Parse:
         return val_lines
 
     def metadata(self, line: str) -> dict:
+        """Parses and validates the metadata of a hub.
+
+        Args:
+            line: A line from the map file.
+
+        Returns:
+            A dictionary containing the hub metadata.
+
+        Raises:
+            ValueError: If a metadata value has an invalid format.
+        """
         zone: str = "normal"
         color: Optional[str] = None
         max_drones: int = 1
@@ -102,6 +139,17 @@ class Parse:
         return {"zone": zone, "color": color, "max_drones": max_drones}
 
     def meta_connect(self, line: str) -> dict[str, Union[int, float]]:
+        """Parses and validates the metadata of a connection.
+
+        Args:
+            line: A line from the map file.
+
+        Returns:
+            A dictionary containing the connection metadata.
+
+        Raises:
+            ValueError: If a metadata value has an invalid format.
+        """
         capacity: Union[int, float] = float("inf")
         splited_meta: list[str] = line.strip().split()
         meta: list[str] = splited_meta[2:]
@@ -136,6 +184,15 @@ class Parse:
         return {"max_link_capacity": capacity}
 
     def parse_nb(self, line: str) -> None:
+        """Parses and validates the number of drones.
+
+        Args:
+            line: A line from the map file.
+
+        Raises:
+            ValueError: If the number of drones is not
+            an integer or is negative.
+        """
         splited_nb: list[str] = line.strip().split()
         if len(splited_nb) != 2:
             print("ERRO - Miss args")
@@ -152,6 +209,17 @@ class Parse:
             sys.exit(1)
 
     def parse_hub(self, line: str) -> Hub:
+        """Parses a hub definition and adds the hub to the hub list.
+
+        Args:
+            line: A line from the map file.
+
+        Returns:
+            The newly created hub.
+
+        Raises:
+            ValueError: If the hub coordinates are not valid integers.
+        """
         splited_se: list[str] = line.strip().split()
         if len(splited_se) < 4:
             print("ERRO - Miss args")
@@ -188,12 +256,28 @@ class Parse:
         return hub
 
     def find_hub(self, name: str) -> Optional[Hub]:
+        """Searches for a hub by its name.
+
+        Args:
+            name: The name of the hub to search for.
+
+        Returns:
+            The matching hub if it exists, otherwise None.
+        """
         for hub in self.hubs:
             if hub.name == name:
                 return hub
         return None
 
     def parse_connect(self, line: str) -> None:
+        """Parses a connection definition and adds it to the connection list.
+
+        Args:
+            line: A line from the map file.
+
+        Raises:
+            ValueError: If the connection format is invalid.
+        """
         splited_connect: list[str] = line.strip().split()
         if len(splited_connect) < 2:
             print("ERRO - Miss args")
@@ -207,7 +291,7 @@ class Parse:
 
         hub1_obj = self.find_hub(hub1)
         hub2_obj = self.find_hub(hub2)
-        if hub1_obj is None or hub2_obj is None:
+        if (hub1_obj is None or hub2_obj is None):
             print("ERRO - Hub not found")
             sys.exit(1)
 
@@ -226,6 +310,13 @@ class Parse:
         self.connections.append(connection)
 
     def type_lines(self) -> None:
+        """Processes the map lines according to their type.
+
+        Identifies each line as a hub,
+        connection, start hub, end hub,
+        or drone count and calls the appropriate
+        parsing method.
+        """
         val_line: list[str] = self.check_line()
 
         for line in val_line:

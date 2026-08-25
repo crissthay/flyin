@@ -49,9 +49,9 @@ Since the coordinates can be negative or may not correspond to the size of my sc
 
 **Easy example:**  
 
-COST: 4
-PRIORITY: 0
-PATH: ['start', 'upper', 'middle', 'lower', 'goal']
+COST: 4  
+PRIORITY: 0  
+PATH: ['start', 'upper', 'middle', 'lower', 'goal']  
 
 D0-upper  
 D0-middle  
