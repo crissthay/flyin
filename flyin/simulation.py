@@ -449,7 +449,7 @@ class Simulation:
 
         for conn in self.connections:
             cap = conn.max_link_capacity
-            cap_str: str = (
+            cap_strr: str = (
                 "inf"
                 if cap == float("inf")
                 else str(int(cap))
@@ -457,7 +457,7 @@ class Simulation:
 
             print(
                 f"Connection {conn.hub1.name}-{conn.hub2.name}: "
-                f"{len(conn.drones)}/{cap_str} capacity used"
+                f"{len(conn.drones)}/{cap_strr} capacity used"
             )
 
     def simulate(self, capacity_info: bool = False) -> None:
