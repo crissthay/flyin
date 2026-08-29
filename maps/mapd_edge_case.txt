@@ -1,0 +1,92 @@
+# Single drone - linear path
+nb_drones: 1
+
+start_hub: start 0 0 [color=green]
+hub: middle 1 0 [color=yellow]
+end_hub: goal 2 0 [color=red]
+
+connection: start-middle
+connection: middle-goal
+
+# Bottleneck - hub capacity 1
+nb_drones: 4
+
+start_hub: start 0 0 [color=green]
+hub: bottleneck 1 0 [color=yellow max_drones=1]
+hub: middle 2 0 [color=blue max_drones=1]
+end_hub: goal 3 0 [color=red]
+
+connection: start-bottleneck [max_link_capacity=4]
+connection: bottleneck-middle [max_link_capacity=4]
+connection: middle-goal [max_link_capacity=4]
+
+# Disconnected graph
+nb_drones: 2
+
+start_hub: start 0 0 [color=green]
+hub: middle 1 0 [color=yellow]
+hub: isolated 5 5 [color=blue]
+end_hub: goal 3 0 [color=red]
+
+connection: start-middle
+connection: isolated-goal
+
+# Invalid connection
+nb_drones: 1
+
+start_hub: start 0 0 [color=green]
+hub: middle 1 0 [color=yellow]
+end_hub: goal 2 0 [color=red]
+
+connection: start-middle
+connection: middle-does_not_exist
+connection: middle-goal
+
+# Zero capacity
+nb_drones: 2
+
+start_hub: start 0 0 [color=green]
+hub: closed 1 0 [color=yellow max_drones=0]
+end_hub: goal 2 0 [color=red]
+
+connection: start-closed
+connection: closed-goal
+
+# Restricted zone
+nb_drones: 1
+
+start_hub: start 0 0 [color=green]
+hub: restricted_zone 1 0 [color=orange zone=restricted]
+end_hub: goal 2 0 [color=red]
+
+connection: start-restricted_zone
+connection: restricted_zone-goal
+
+nb_drones: 1
+
+start_hub: start 0 0 [color=green]
+hub: normal_a 1 1 [color=blue]
+hub: priority_a 1 -1 [color=purple zone=priority]
+hub: normal_b 2 1 [color=blue]
+hub: normal_c 2 -1 [color=blue]
+end_hub: goal 3 0 [color=red]
+
+connection: start-normal_a
+connection: normal_a-normal_b
+connection: normal_b-goal
+
+connection: start-priority_a
+connection: priority_a-normal_c
+connection: normal_c-goal
+
+
+# High connection capacity
+nb_drones: 4
+
+start_hub: start 0 0 [color=green]
+hub: junction 1 0 [color=yellow max_drones=4]
+end_hub: goal 2 0 [color=red]
+
+connection: start-junction [max_link_capacity=4]
+connection: junction-goal [max_link_capacity=4]
+
