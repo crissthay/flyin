@@ -12,6 +12,7 @@ from flyin.drone import Drone
 if TYPE_CHECKING:
     from flyin.simulation import Simulation
 
+
 COLOR_RGB: dict[str, tuple[int, int, int]] = {
     "red": (255, 0, 0),
     "green": (0, 255, 0),
@@ -25,6 +26,37 @@ COLOR_RGB: dict[str, tuple[int, int, int]] = {
 
 
 class Visual:
+    """Manage the graphical visualization of the drone simulation.
+
+    This class is responsible for rendering hubs, connections, drones,
+    background effects, and the animation of drone movements using Pygame.
+    It also provides camera movement and zoom controls.
+
+    Attributes:
+        hubs: List of hubs displayed in the simulation.
+        start_hub: Starting hub of the simulation.
+        end_hub: Destination hub of the simulation.
+        drones: List of drones participating in the simulation.
+        connections: List of connections between hubs.
+        simulation: Optional reference to the simulation instance.
+        width: Width of the Pygame window.
+        height: Height of the Pygame window.
+        screen: Pygame surface used for rendering.
+        clock: Pygame clock controlling the frame rate.
+        zoom: Current zoom level.
+        camera_x: Horizontal camera position.
+        camera_y: Vertical camera position.
+        zoom_speed: Speed used when changing the zoom.
+        camera_speed: Speed used when moving the camera.
+        loop: Controls whether the visualization is running.
+        drone_list: List of drones to display.
+        stars: Data used to render animated stars.
+        hue: Current hue used for rainbow-colored hubs.
+        animation_turn: Current turn being animated.
+        animation_progress: Progress of the current movement animation.
+        history: Recorded simulation movements used for animation.
+    """
+
     def __init__(
         self,
         hubs: list[Hub],
@@ -34,6 +66,17 @@ class Visual:
         connections: list[Connection],
         simulation: Optional["Simulation"] = None,
     ) -> None:
+        """Initialize the graphical simulation.
+
+        Args:
+            hubs: List of hubs present in the simulation.
+            start_hub: Hub where drones initially start.
+            end_hub: Hub where drones must finish.
+            drones: List of drones participating in the simulation.
+            connections: List of connections between hubs.
+            simulation: Optional simulation object containing movement
+                history.
+        """
         pygame.init()
 
         self.width: int = 1000
@@ -77,6 +120,7 @@ class Visual:
         self._load_images()
 
     def _load_images(self) -> None:
+        """Load and scale all graphical assets used by the visualization."""
         self.back: pygame.Surface = pygame.transform.scale(
             pygame.image.load("visual/galaxybg.jpeg"),
             (self.width, self.height),
@@ -110,7 +154,20 @@ class Visual:
             (90, 60),
         )
 
-    def map_to_screen(self, x: float, y: float) -> tuple[float, float]:
+    def map_to_screen(
+        self,
+        x: float,
+        y: float,
+    ) -> tuple[float, float]:
+        """Convert map coordinates into screen coordinates.
+
+        Args:
+            x: Horizontal coordinate on the simulation map.
+            y: Vertical coordinate on the simulation map.
+
+        Returns:
+            A tuple containing the corresponding screen x and y coordinates.
+        """
         screen_center_x: float = self.width / 2.0
         screen_center_y: float = self.height / 2.0
 
@@ -120,6 +177,7 @@ class Visual:
         return screen_x, screen_y
 
     def draw_connections(self) -> None:
+        """Draw all connections between hubs on the screen."""
         for conn in self.connections:
             x1, y1 = self.map_to_screen(conn.hub1.x, conn.hub1.y)
             x2, y2 = self.map_to_screen(conn.hub2.x, conn.hub2.y)
@@ -132,6 +190,7 @@ class Visual:
             )
 
     def draw_stars(self) -> None:
+        """Draw and animate the stars in the background."""
         for star in self.stars:
             x, y, phase, speed = star
             brightness: float = (math.sin(phase) + 1.0) / 2.0
@@ -142,6 +201,7 @@ class Visual:
             star[2] += 0.10 * speed
 
     def draw_hubs(self) -> None:
+        """Draw all hubs using their configured colors and graphics."""
         for hub in self.hubs:
             x, y = self.map_to_screen(hub.x, hub.y)
 
@@ -211,14 +271,17 @@ class Visual:
         self.hue = (self.hue + 0.005) % 1.0
 
     def draw_drones(self) -> None:
+        """Draw drones at their current hub positions."""
         by_hub: dict[Hub, list[Drone]] = {}
+
         for drone in self.drone_list:
             by_hub.setdefault(drone.location, []).append(drone)
 
         for hub, drones_here in by_hub.items():
             base_x, base_y = self.map_to_screen(hub.x, hub.y)
+
             for i, _ in enumerate(drones_here):
-                offset = (i % 4) * 8
+                offset: int = (i % 4) * 8
                 rect = self.drone_img.get_rect(
                     center=(
                         int(base_x + 45 + offset),
@@ -228,17 +291,24 @@ class Visual:
                 self.screen.blit(self.drone_img, rect)
 
     def draw_animation_drones(self) -> None:
+        """Draw drones according to the current simulation animation turn."""
         if self.animation_turn >= len(self.history):
             return
 
-        current_moves = self.history[self.animation_turn]
+        current_moves: list[tuple[str, Hub, Hub]] = (
+            self.history[self.animation_turn]
+        )
 
-        moving_ids = {drone_id for drone_id, _, _ in current_moves}
+        moving_ids: set[str] = {
+            drone_id for drone_id, _, _ in current_moves
+        }
 
         previous_positions: dict[str, Hub] = {}
+
         if self.animation_turn == 0:
             previous_positions = {
-                drone.id_name: self.start_hub for drone in self.drone_list
+                drone.id_name: self.start_hub
+                for drone in self.drone_list
             }
         else:
             for turn_moves in self.history[: self.animation_turn]:
@@ -249,7 +319,10 @@ class Visual:
             if drone.id_name in moving_ids:
                 continue
 
-            hub = previous_positions.get(drone.id_name, self.start_hub)
+            hub: Hub = previous_positions.get(
+                drone.id_name,
+                self.start_hub,
+            )
             x, y = self.map_to_screen(hub.x, hub.y)
             rect = self.drone_img.get_rect(
                 center=(int(x + 45), int(y + 30))
@@ -257,11 +330,23 @@ class Visual:
             self.screen.blit(self.drone_img, rect)
 
         for drone_id, start_hub, target_hub in current_moves:
-            start_x, start_y = self.map_to_screen(start_hub.x, start_hub.y)
-            target_x, target_y = self.map_to_screen(target_hub.x, target_hub.y)
+            start_x, start_y = self.map_to_screen(
+                start_hub.x,
+                start_hub.y,
+            )
+            target_x, target_y = self.map_to_screen(
+                target_hub.x,
+                target_hub.y,
+            )
 
-            x = start_x + (target_x - start_x) * self.animation_progress
-            y = start_y + (target_y - start_y) * self.animation_progress
+            x: float = (
+                start_x
+                + (target_x - start_x) * self.animation_progress
+            )
+            y: float = (
+                start_y
+                + (target_y - start_y) * self.animation_progress
+            )
 
             rect = self.drone_img.get_rect(
                 center=(int(x + 45), int(y + 30))
@@ -269,6 +354,7 @@ class Visual:
             self.screen.blit(self.drone_img, rect)
 
     def render_frame(self) -> None:
+        """Render one complete frame of the simulation."""
         self.screen.blit(self.back, (0, 0))
         self.draw_connections()
         self.draw_stars()
@@ -278,6 +364,11 @@ class Visual:
         self.clock.tick(30)
 
     def run(self) -> None:
+        """Run the Pygame visualization loop.
+
+        Handles window events, camera movement, zoom controls, and
+        animation progression until the visualization is closed.
+        """
         while self.loop:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -299,12 +390,14 @@ class Visual:
                 self.zoom -= self.zoom_speed
 
             self.zoom = max(20, min(self.zoom, 300))
+
             if self.animation_turn < len(self.history):
                 self.animation_progress += 0.03
 
                 if self.animation_progress >= 1.0:
                     self.animation_progress = 0.0
                     self.animation_turn += 1
+
             self.render_frame()
 
         pygame.quit()
