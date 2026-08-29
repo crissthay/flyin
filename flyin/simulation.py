@@ -64,49 +64,50 @@ class Simulation:
 
         return neighbors
 
-    def dijkstra(self) -> list[Hub]:
-        """Find the best path from the starting hub to the destination.
+    def _shortest_path(
+        self,
+        source: Hub,
+        avoid: Optional[Hub] = None
+    ) -> list[Hub]:
+        """Compute the lowest-cost path from source to end_hub.
 
-        The algorithm uses Dijkstra's algorithm to find the path with
-        the lowest cost. Restricted zones have a higher cost, while
-        priority zones are preferred when paths have the same cost.
+        Shared Dijkstra core used by both `dijkstra` (full path from
+        start_hub) and `next_hop_dijkstra` (rerouting from a drone's
+        current position). Restricted zones cost 2, normal/priority
+        zones cost 1, and blocked zones are never entered. Among
+        equal-cost paths, the one crossing more priority zones wins.
+
+        Args:
+            source: The hub to start the search from.
+            avoid: An optional hub to exclude from the search
+                (used when the preferred hub is temporarily full).
 
         Returns:
-            A list of hubs representing the best path from the starting
-            hub to the destination. Returns an empty list if no path
-            exists.
+            The list of hubs from source to end_hub, inclusive.
+            Empty list if no path exists.
         """
         distances: dict[Hub, tuple[Union[int, float], int]] = {
             hub: (float("inf"), 0)
             for hub in self.hubs
         }
+        distances[source] = (0, 0)
 
-        distances[self.start_hub] = (0, 0)
-
-        parent: dict[Hub, Optional[Hub]] = {
-            self.start_hub: None
-        }
+        parent: dict[Hub, Optional[Hub]] = {source: None}
 
         counter: int = 0
-
         queue: list[tuple[Union[int, float], int, int, Hub]] = [
-            (0, 0, counter, self.start_hub)
+            (0, 0, counter, source)
         ]
 
         while queue:
-            (
-                current_dis,
-                current_priority,
-                _,
-                current_hub
-            ) = heapq.heappop(queue)
-
+            current_dis, current_priority, _, current_hub = (
+                heapq.heappop(queue)
+            )
             current_priority = -current_priority
 
             if (
                 current_dis > distances[current_hub][0]
-                or
-                (
+                or (
                     current_dis == distances[current_hub][0]
                     and current_priority < distances[current_hub][1]
                 )
@@ -118,13 +119,12 @@ class Simulation:
                 if neighbor.is_blocked():
                     continue
 
-                if neighbor.zone == "restricted":
-                    weight: int = 2
-                else:
-                    weight: int = 1
+                if avoid is not None and neighbor == avoid:
+                    continue
+
+                weight: int = 2 if neighbor.zone == "restricted" else 1
 
                 priority: int = current_priority
-
                 if neighbor.zone == "priority":
                     priority += 1
 
@@ -132,53 +132,55 @@ class Simulation:
 
                 if (
                     distance < distances[neighbor][0]
-                    or
-                    (
+                    or (
                         distance == distances[neighbor][0]
                         and priority > distances[neighbor][1]
                     )
                 ):
-                    distances[neighbor] = (
-                        distance,
-                        priority
-                    )
-
+                    distances[neighbor] = (distance, priority)
                     parent[neighbor] = current_hub
-
                     counter += 1
-
                     heapq.heappush(
                         queue,
-                        (
-                            distance,
-                            -priority,
-                            counter,
-                            neighbor
-                        )
+                        (distance, -priority, counter, neighbor)
                     )
-
-        path: list[Hub] = []
 
         if self.end_hub not in parent:
             return []
 
+        path: list[Hub] = []
         current: Optional[Hub] = self.end_hub
-
         while current is not None:
             path.append(current)
             current = parent[current]
-
         path.reverse()
+
+        if path[0] != source:
+            return []
+
+        return path
+
+    def dijkstra(self) -> list[Hub]:
+        """Find the main reference path from start_hub to end_hub.
+
+        Uses the shared Dijkstra core and prints the resulting cost,
+        priority-zone count, and path for visibility.
+
+        Returns:
+            A list of hubs representing the best path from the
+            starting hub to the destination. Empty list if none
+            exists.
+        """
+        path: list[Hub] = self._shortest_path(self.start_hub)
+
+        if not path:
+            return []
 
         total_cost: int = 0
         total_priority: int = 0
 
         for hub in path[1:]:
-            if hub.zone == "restricted":
-                total_cost += 2
-            else:
-                total_cost += 1
-
+            total_cost += 2 if hub.zone == "restricted" else 1
             if hub.zone == "priority":
                 total_priority += 1
 
@@ -187,6 +189,32 @@ class Simulation:
         print("PATH:", [hub.name for hub in path])
 
         return path
+
+    def next_hop_dijkstra(
+        self,
+        source: Hub,
+        avoid: Optional[Hub] = None
+    ) -> Optional[Hub]:
+        """Find the next hub to take on a rerouted path.
+
+        Used as a fallback when a drone's preferred next hub is
+        temporarily full or blocked, allowing it to take an
+        alternative route toward end_hub.
+
+        Args:
+            source: The hub where the drone currently is.
+            avoid: A hub that should be avoided, if provided.
+
+        Returns:
+            The first hub after source on the recalculated path.
+            None if no valid path exists.
+        """
+        path: list[Hub] = self._shortest_path(source, avoid=avoid)
+
+        if len(path) < 2:
+            return None
+
+        return path[1]
 
     def check_connect(
         self,
@@ -212,174 +240,6 @@ class Simulation:
                 return connect
 
         return None
-
-    def move_drone(
-        self,
-        drone: Drone,
-        next_hub: Hub
-    ) -> bool:
-        """Try to move a drone to the next hub.
-
-        The move is only performed if there is a connection and
-        both the destination hub and the connection have available
-        capacity.
-
-        Args:
-            drone: The drone to move.
-            next_hub: The hub where the drone wants to go.
-
-        Returns:
-            True if the drone was successfully moved, otherwise False.
-        """
-        current: Hub = drone.location
-        connection: Optional[Connection] = self.check_connect(
-            current,
-            next_hub
-        )
-
-        if connection is None:
-            return False
-
-        if (
-            not next_hub.is_full()
-            and not next_hub.is_blocked()
-            and not connection.is_full_connect()
-        ):
-            connection.add_drone(drone)
-            current.remove_drone(drone)
-            next_hub.add_drone(drone)
-            drone.location = next_hub
-
-            return True
-
-        return False
-
-    """Algoritmo do pc em casa:"""
-
-    """arrumar apartir daqui: """
-    def next_hop_dijkstra(
-        self,
-        source: Hub,
-        avoid: Optional[Hub] = None
-    ) -> Optional[Hub]:
-        """Find the next hub using Dijkstra's algorithm.
-
-        The algorithm searches for a path from the source hub to the
-        destination while optionally avoiding a specific hub.
-
-        This method is used as a fallback when the preferred next hub
-        is temporarily full or blocked, allowing the drone to take
-        an alternative route.
-
-        Args:
-            source: The hub where the drone currently is.
-            avoid: A hub that should be avoided, if provided.
-
-        Returns:
-            The first hub after the source in the calculated path.
-            Returns None if no valid path exists.
-        """
-        distances: dict[Hub, tuple[Union[int, float], int]] = {
-            hub: (float("inf"), 0)
-            for hub in self.hubs
-        }
-
-        distances[source] = (0, 0)
-
-        parent: dict[Hub, Optional[Hub]] = {
-            source: None
-        }
-
-        counter: int = 0
-
-        queue: list[tuple[Union[int, float], int, int, Hub]] = [
-            (0, 0, counter, source)
-        ]
-
-        while queue:
-            (
-                current_dis,
-                current_priority,
-                _,
-                current_hub
-            ) = heapq.heappop(queue)
-
-            current_priority = -current_priority
-
-            if (
-                current_dis > distances[current_hub][0]
-                or
-                (
-                    current_dis == distances[current_hub][0]
-                    and current_priority < distances[current_hub][1]
-                )
-            ):
-                continue
-
-            for neighbor in self.get_neighbors(current_hub):
-
-                if neighbor.is_blocked():
-                    continue
-
-                if avoid is not None and neighbor == avoid:
-                    continue
-
-                if neighbor.zone == "restricted":
-                    weight: int = 2
-                else:
-                    weight = 1
-
-                priority: int = current_priority
-
-                if neighbor.zone == "priority":
-                    priority += 1
-
-                distance: Union[int, float] = current_dis + weight
-
-                if (
-                    distance < distances[neighbor][0]
-                    or
-                    (
-                        distance == distances[neighbor][0]
-                        and priority > distances[neighbor][1]
-                    )
-                ):
-                    distances[neighbor] = (
-                        distance,
-                        priority
-                    )
-
-                    parent[neighbor] = current_hub
-
-                    counter += 1
-
-                    heapq.heappush(
-                        queue,
-                        (
-                            distance,
-                            -priority,
-                            counter,
-                            neighbor
-                        )
-                    )
-
-        path: list[Hub] = []
-
-        if self.end_hub not in parent:
-            return []
-
-        current: Optional[Hub] = self.end_hub
-
-        while current is not None:
-            path.append(current)
-            current = parent[current]
-
-        path.reverse()
-
-        if len(path) < 2 or path[0] != source:
-            return None
-
-        return path[1]
 
     def get_preferred_next_hub(
         self,
@@ -480,7 +340,6 @@ class Simulation:
         if not path:
             print("Can't move: no path to destination.")
             sys.exit(1)
-            return
 
         while any(
             drone.location != self.end_hub
@@ -654,3 +513,5 @@ class Simulation:
                 print()
             self.history.append(turn_moves)
             turn += 1
+
+        print(f"\nTotal turns: {len(self.history)}")
