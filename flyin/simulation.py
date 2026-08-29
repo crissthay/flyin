@@ -1,8 +1,9 @@
 from .drone import Drone
 import heapq
 from .hub import Hub
-from .conect import Connection
+from .connect import Connection
 from typing import Union, Optional
+import sys
 
 
 class Simulation:
@@ -120,7 +121,7 @@ class Simulation:
                 if neighbor.zone == "restricted":
                     weight: int = 2
                 else:
-                    weight = 1
+                    weight: int = 1
 
                 priority: int = current_priority
 
@@ -254,6 +255,8 @@ class Simulation:
         return False
 
     """Algoritmo do pc em casa:"""
+
+    """arrumar apartir daqui: """
     def next_hop_dijkstra(
         self,
         source: Hub,
@@ -360,10 +363,10 @@ class Simulation:
                         )
                     )
 
-        if self.end_hub not in parent:
-            return None
-
         path: list[Hub] = []
+
+        if self.end_hub not in parent:
+            return []
 
         current: Optional[Hub] = self.end_hub
 
@@ -476,6 +479,7 @@ class Simulation:
 
         if not path:
             print("Can't move: no path to destination.")
+            sys.exit(1)
             return
 
         while any(
@@ -483,9 +487,7 @@ class Simulation:
             for drone in self.drone_list
         ):
             turn_output: list[str] = []
-
             turn_moves: list[tuple[str, Hub, Hub]] = []
-
             already_acted: set[Drone] = set()
 
             for drone in self.drone_list:
@@ -650,7 +652,5 @@ class Simulation:
             if capacity_info:
                 self.print_capacity_info()
                 print()
-
             self.history.append(turn_moves)
-
             turn += 1

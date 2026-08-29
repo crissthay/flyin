@@ -6,7 +6,7 @@ from typing import Optional, TYPE_CHECKING
 import pygame
 
 from flyin.hub import Hub
-from flyin.conect import Connection
+from flyin.connect import Connection
 from flyin.drone import Drone
 
 if TYPE_CHECKING:

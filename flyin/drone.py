@@ -1,6 +1,6 @@
 from .hub import Hub
 from typing import Optional
-from .conect import Connection
+from .connect import Connection
 
 
 class Drone:

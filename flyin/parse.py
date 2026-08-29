@@ -1,7 +1,7 @@
 import sys
 from typing import Optional, Union
 from .hub import Hub
-from .conect import Connection
+from .connect import Connection
 
 
 zone_valid: list[str] = ["normal", "blocked", "restricted", "priority"]
@@ -63,7 +63,7 @@ class Parse:
                 for line in file:
                     self.lines_list.append(line.strip())
         except FileNotFoundError:
-            print("ERRO - File not found")
+            print("ERROR - File not found")
             sys.exit(1)
         return self.lines_list
 
@@ -102,12 +102,12 @@ class Parse:
         for item in meta:
             item = item.strip("[]")
             if "=" not in item:
-                print(f"ERRO - Invalid metadata format: '{item}'")
+                print(f"ERROR - Invalid metadata format: '{item}'")
                 sys.exit(1)
 
             parts = item.split("=")
             if len(parts) != 2:
-                print(f"ERRO - Invalid metadata format: '{item}'")
+                print(f"ERROR - Invalid metadata format: '{item}'")
                 sys.exit(1)
             key, value = parts
 
@@ -115,25 +115,25 @@ class Parse:
                 if value in zone_valid:
                     zone = value
                 else:
-                    print(f"ERRO - Invalid zone: '{value}'")
+                    print(f"ERROR - Invalid zone: '{value}'")
                     sys.exit(1)
             elif key == "color":
                 if value in color_valid:
                     color = value
                 else:
-                    print(f"ERRO - Invalid color: '{value}'")
+                    print(f"ERROR - Invalid color: '{value}'")
                     sys.exit(1)
             elif key == "max_drones":
                 try:
                     max_drones = int(value)
                 except ValueError:
-                    print("ERRO - max_drones must be an integer")
+                    print("ERROR - max_drones must be an integer")
                     sys.exit(1)
                 if max_drones <= 0:
-                    print("ERRO - max_drones must be a positive integer")
+                    print("ERROR - max_drones must be a positive integer")
                     sys.exit(1)
             else:
-                print(f"ERRO - Unknown metadata key: '{key}'")
+                print(f"ERROR - Unknown metadata key: '{key}'")
                 sys.exit(1)
 
         return {"zone": zone, "color": color, "max_drones": max_drones}
@@ -157,12 +157,12 @@ class Parse:
         for item in meta:
             item = item.strip("[]")
             if "=" not in item:
-                print(f"ERRO - Invalid metadata format: '{item}'")
+                print(f"ERROR - Invalid metadata format: '{item}'")
                 sys.exit(1)
 
             parts = item.split("=")
             if len(parts) != 2:
-                print(f"ERRO - Invalid metadata format: '{item}'")
+                print(f"ERROR - Invalid metadata format: '{item}'")
                 sys.exit(1)
             key, value = parts
 
@@ -170,15 +170,15 @@ class Parse:
                 try:
                     capacity = int(value)
                 except ValueError:
-                    print("ERRO - max_link_capacity must be an integer")
+                    print("ERROR - max_link_capacity must be an integer")
                     sys.exit(1)
                 if capacity <= 0:
                     print(
-                        "ERRO - max_link_capacity must be a positive integer"
+                        "ERROR - max_link_capacity must be a positive integer"
                         )
                     sys.exit(1)
             else:
-                print(f"ERRO - Unknown metadata key: '{key}'")
+                print(f"ERROR - Unknown metadata key: '{key}'")
                 sys.exit(1)
 
         return {"max_link_capacity": capacity}
@@ -195,17 +195,17 @@ class Parse:
         """
         splited_nb: list[str] = line.strip().split()
         if len(splited_nb) != 2:
-            print("ERRO - Miss args")
+            print("ERROR - Miss args")
             sys.exit(1)
 
         try:
             self.nb_drones = int(splited_nb[1])
         except ValueError:
-            print("ERRO - nb_drones must be an integer")
+            print("ERROR - nb_drones must be an integer")
             sys.exit(1)
 
-        if self.nb_drones < 0:
-            print("ERRO - nb_drones can't be negative")
+        if self.nb_drones <= 0:
+            print("ERROR - nb_drones can't be negative")
             sys.exit(1)
 
     def parse_hub(self, line: str) -> Hub:
@@ -222,20 +222,20 @@ class Parse:
         """
         splited_se: list[str] = line.strip().split()
         if len(splited_se) < 4:
-            print("ERRO - Miss args")
+            print("ERROR - Miss args")
             sys.exit(1)
 
         name: str = splited_se[1]
 
         if self.find_hub(name) is not None:
-            print(f"ERRO - Duplicate hub name: '{name}'")
+            print(f"ERROR - Duplicate hub name: '{name}'")
             sys.exit(1)
 
         try:
             x = int(splited_se[2])
             y = int(splited_se[3])
         except ValueError:
-            print("ERRO - Format must be (name, x, y)")
+            print("ERROR - Format must be (name, x, y)")
             sys.exit(1)
 
         info = self.metadata(line)
@@ -280,28 +280,28 @@ class Parse:
         """
         splited_connect: list[str] = line.strip().split()
         if len(splited_connect) < 2:
-            print("ERRO - Miss args")
+            print("ERROR - Miss args")
             sys.exit(1)
 
         try:
             hub1, hub2 = splited_connect[1].split("-")
         except ValueError:
-            print("ERRO - Invalid connection format")
+            print("ERROR - Invalid connection format")
             sys.exit(1)
 
         hub1_obj = self.find_hub(hub1)
         hub2_obj = self.find_hub(hub2)
         if (hub1_obj is None or hub2_obj is None):
-            print("ERRO - Hub not found")
+            print("ERROR - Hub not found")
             sys.exit(1)
 
         if hub1 == hub2:
-            print(f"ERRO - Connection to itself: '{hub1}'")
+            print(f"ERROR - Connection to itself: '{hub1}'")
             sys.exit(1)
 
         pair: tuple[str, str] = (min(hub1, hub2), max(hub1, hub2))
         if pair in self._seen_connections:
-            print(f"ERRO - Duplicate connection: '{hub1}-{hub2}'")
+            print(f"ERROR - Duplicate connection: '{hub1}-{hub2}'")
             sys.exit(1)
         self._seen_connections.add(pair)
 
@@ -322,13 +322,13 @@ class Parse:
         for line in val_line:
             if line.startswith("start_hub:"):
                 if self.start_hub is not None:
-                    print("ERRO - Multiple start_hub defined")
+                    print("ERROR - Multiple start_hub defined")
                     sys.exit(1)
                 self.start_hub = self.parse_hub(line)
                 self.start_hub.max_drones = float("inf")
             elif line.startswith("end_hub:"):
                 if self.end_hub is not None:
-                    print("ERRO - Multiple end_hub defined")
+                    print("ERROR - Multiple end_hub defined")
                     sys.exit(1)
                 self.end_hub = self.parse_hub(line)
                 self.end_hub.max_drones = float("inf")
@@ -339,17 +339,17 @@ class Parse:
             elif line.startswith("connection:"):
                 continue
             else:
-                print(f"ERRO - Unknown line: '{line}'")
+                print(f"ERROR - Unknown line: '{line}'")
                 sys.exit(1)
 
         if self.nb_drones is None:
-            print("ERRO - nb_drones not defined")
+            print("ERROR - nb_drones not defined")
             sys.exit(1)
         if self.start_hub is None:
-            print("ERRO - No start_hub defined")
+            print("ERROR - No start_hub defined")
             sys.exit(1)
         if self.end_hub is None:
-            print("ERRO - No end_hub defined")
+            print("ERROR - No end_hub defined")
             sys.exit(1)
 
         for line in val_line:
