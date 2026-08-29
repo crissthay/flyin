@@ -29,11 +29,11 @@ The final objective is to move the drones from the starting hub to the destinati
 
 ## Algorithm explanation
 
-**Dijkstra** was the algorithm chosen because it was the one that most closely matched the project requirements. The algorithm finds the shortest path between two points (`start_hub` and `end_hub`) within a set of points (graphs). In this project, it runs only once, which means that all drones follow the same path.
+**Dijkstra** was the algorithm chosen because it was the one that most closely matched the project requirements. The algorithm finds the shortest path between two points (`start_hub` and `end_hub`) within a set of points (graph). Both the main path calculation and the rerouting share the same core search function (`_shortest_path`), used with an optional `avoid` hub to exclude a blocked zone when recalculating. In this project, the main path runs once at the start, and all drones try to follow it by default.
 
-In this project, it works by checking where the drones want to go and verifying whether the hub has enough capacity. This is done one by one, in order. If the other drones see that the first one was able to pass, they will also proceed. If my hub is restricted, my drone arrives one turn later, respecting the (`max_link_capacity`).
+At each turn, the simulation checks, drone by drone in order, whether the next hub and its connection have enough capacity (`hub_reserved_space` and `max_link_capacity`). If a drone's preferred hub is full or blocked, the same Dijkstra logic reruns from that drone's current position, avoiding the blocked hub, to find an alternative route. If the destination is a `restricted` zone, the drone occupies the connection and arrives one turn later instead of moving instantly. Each connection also respects its own `max_link_capacity` per turn, tracked separately so drones that already passed through in the same turn still count against the limit.
 
-Aven though there are other ways to implement this, I intentionally made a trade-off where all the drones move in queues, creating the visual effect of them lining up. Visually, it may seem slow, but it is not a bug.
+Even though there are other ways to implement this, I intentionally made a trade-off where drones move in a queue-like order rather than in parallel free-for-all. Visually, it may seem slow, but it is not a bug — it's the direct result of checking capacity sequentially, drone by drone, every turn.
 
 
 ## Visual representation
@@ -47,7 +47,22 @@ Since the coordinates can be negative or may not correspond to the size of my sc
 
 ## Example input and expected output
 
-**Easy example:**  
+**Example input:**
+
+nb_drones: 3
+
+start_hub: start 0 0 [color=green]  
+hub: upper 1 1 [color=blue]  
+hub: middle 2 0 [color=yellow]  
+hub: lower 3 -1 [color=green]  
+end_hub: goal 4 0 [color=red]  
+
+connection: start-upper  
+connection: upper-middle  
+connection: middle-lower  
+connection: lower-goal  
+
+**Expected output:**  
 
 COST: 4  
 PRIORITY: 0  
@@ -62,9 +77,11 @@ D2-upper
 D0-goal  
 D1-lower  
 D2-middle  
-D1-goal   
+D1-goal  
 D2-lower  
 D2-goal  
+
+The output represents the movements performed during each simulation turn. Drones that do not move during a turn are omitted from the output.  
 
 ## Resources
 
