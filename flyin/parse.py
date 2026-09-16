@@ -100,7 +100,12 @@ class Parse:
         meta: list[str] = splited_meta[4:]
 
         for item in meta:
-            item = item.strip("[]")
+            if not (item.startswith("[") and item.endswith("]")):
+                print(f"ERROR - Metadata must be between []: '{item}'")
+                sys.exit(1)
+
+            item = item[1:-1]
+
             if "=" not in item:
                 print(f"ERROR - Invalid metadata format: '{item}'")
                 sys.exit(1)
@@ -155,7 +160,12 @@ class Parse:
         meta: list[str] = splited_meta[2:]
 
         for item in meta:
-            item = item.strip("[]")
+            if not (item.startswith("[") and item.endswith("]")):
+                print(f"ERROR - Metadata must be between []: '{item}'")
+                sys.exit(1)
+
+            item = item[1:-1]
+
             if "=" not in item:
                 print(f"ERROR - Invalid metadata format: '{item}'")
                 sys.exit(1)

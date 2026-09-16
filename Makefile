@@ -1,8 +1,7 @@
-NAME    = a_maze_ing.py
+NAME    = fly_in
 VENV    = venv
 PYTHON  = $(VENV)/bin/python
 PIP     = $(VENV)/bin/pip
-CONFIG  = config.txt
 
 .SILENT:
 
@@ -19,10 +18,10 @@ build: install
 	$(PYTHON) -m build --wheel --outdir .
 
 run: install
-	$(PYTHON) $(NAME) $(CONFIG)
+	$(PYTHON) $(NAME)
 
 debug: install
-	$(PYTHON) -m pdb $(NAME) $(CONFIG)
+	$(PYTHON) -m pdb $(NAME)
 
 lint: install
 	$(VENV)/bin/flake8 . --exclude venv
