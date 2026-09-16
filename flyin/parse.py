@@ -97,23 +97,45 @@ class Parse:
         max_drones: int = 1
 
         splited_meta: list[str] = line.strip().split()
-        meta: list[str] = splited_meta[4:]
+
+        if "[" not in line or "]" not in line:
+            print("ERROR - Metadata must be between []")
+            sys.exit(1)
+
+        if line.count("[") != 1 or line.count("]") != 1:
+            print("ERROR - Invalid metadata format")
+            sys.exit(1)
+
+        start = line.find("[")
+        end = line.find("]")
+
+        if start > end:
+            print("ERROR - Invalid metadata format")
+            sys.exit(1)
+
+        if line[end + 1:].strip():
+            print("ERROR - Invalid metadata format")
+            sys.exit(1)
+
+        meta_text = line[start + 1:end].strip()
+
+        if not meta_text:
+            print("ERROR - Empty metadata")
+            sys.exit(1)
+
+        meta: list[str] = meta_text.split()
 
         for item in meta:
-            if not (item.startswith("[") and item.endswith("]")):
-                print(f"ERROR - Metadata must be between []: '{item}'")
-                sys.exit(1)
-
-            item = item[1:-1]
-
             if "=" not in item:
                 print(f"ERROR - Invalid metadata format: '{item}'")
                 sys.exit(1)
 
             parts = item.split("=")
+
             if len(parts) != 2:
                 print(f"ERROR - Invalid metadata format: '{item}'")
                 sys.exit(1)
+
             key, value = parts
 
             if key == "zone":
@@ -156,24 +178,41 @@ class Parse:
             ValueError: If a metadata value has an invalid format.
         """
         capacity: Union[int, float] = float("inf")
+
         splited_meta: list[str] = line.strip().split()
-        meta: list[str] = splited_meta[2:]
+
+        if len(splited_meta) < 3:
+            return {"max_link_capacity": capacity}
+
+        if not splited_meta[2].startswith("[") or not splited_meta[-1].endswith("]"):
+            print("ERROR - Metadata must be between []")
+            sys.exit(1)
+
+        meta_text: str = " ".join(splited_meta[2:])
+
+        if not meta_text.startswith("[") or not meta_text.endswith("]"):
+            print("ERROR - Metadata must be between []")
+            sys.exit(1)
+
+        meta_text = meta_text[1:-1].strip()
+
+        if not meta_text:
+            print("ERROR - Empty metadata")
+            sys.exit(1)
+
+        meta: list[str] = meta_text.split()
 
         for item in meta:
-            if not (item.startswith("[") and item.endswith("]")):
-                print(f"ERROR - Metadata must be between []: '{item}'")
-                sys.exit(1)
-
-            item = item[1:-1]
-
             if "=" not in item:
                 print(f"ERROR - Invalid metadata format: '{item}'")
                 sys.exit(1)
 
             parts = item.split("=")
+
             if len(parts) != 2:
                 print(f"ERROR - Invalid metadata format: '{item}'")
                 sys.exit(1)
+
             key, value = parts
 
             if key == "max_link_capacity":
@@ -182,10 +221,11 @@ class Parse:
                 except ValueError:
                     print("ERROR - max_link_capacity must be an integer")
                     sys.exit(1)
+
                 if capacity <= 0:
                     print(
                         "ERROR - max_link_capacity must be a positive integer"
-                        )
+                    )
                     sys.exit(1)
             else:
                 print(f"ERROR - Unknown metadata key: '{key}'")
