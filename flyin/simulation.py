@@ -292,36 +292,11 @@ class Simulation:
         return hub.max_drones - len(hub.drones) - reserved
 
     def print_capacity_info(self) -> None:
-        """Print the current capacity of hubs and connections.
-
-        This method is used by the --capacity-info flag and is called
-        once per simulation turn.
-        """
         for hub in self.hubs:
-            cap = hub.max_drones
-            cap_str: str = (
-                "inf"
-                if cap == float("inf")
-                else str(int(cap))
-            )
-
-            print(
-                f"Zone {hub.name}: "
-                f"{len(hub.drones)}/{cap_str} drones"
-            )
-
+            print(f"name {hub.zone} drone: {len(hub.drones)}")
         for conn in self.connections:
-            cap = conn.max_link_capacity
-            cap_strr: str = (
-                "inf"
-                if cap == float("inf")
-                else str(int(cap))
-            )
+            print(f"hubs:{conn.hub1.name}-{conn.hub2.name} capacity: {len(conn.drones)}")
 
-            print(
-                f"Connection {conn.hub1.name}-{conn.hub2.name}: "
-                f"{len(conn.drones)}/{cap_strr} capacity used"
-            )
 
     def simulate(self, capacity_info: bool = False) -> None:
         """Run the drone simulation turn by turn.

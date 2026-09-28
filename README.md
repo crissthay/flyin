@@ -22,8 +22,6 @@ The final objective is to move the drones from the starting hub to the destinati
 
 **- python3 main.py mapa.txt** = Run the program
 
-**- python3 main.py --capacity-info mapa.txt** = Display capacity information
-
 **- W = up, D = right, A = left, S = down, Q/E = zoom in/out** = Screen movement and zoom
 
 
