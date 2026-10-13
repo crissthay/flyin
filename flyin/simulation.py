@@ -291,11 +291,11 @@ class Simulation:
 
         return hub.max_drones - len(hub.drones) - reserved
 
-    def print_capacity_info(self) -> None:
-        for hub in self.hubs:
-            print(f"name {hub.zone} drone: {len(hub.drones)}")
-        for conn in self.connections:
-            print(f"hubs:{conn.hub1.name}-{conn.hub2.name} capacity: {len(conn.drones)}")
+    def info(self):
+        for hubs in self.hubs:
+            print(f"name: {hubs.zone}, drones: {len(hubs.drones)}")
+        for connect in self.connections:
+            print(f"names hubs: {connect.hub1}-{connect.hub2} drones: {len(connect.drones)}")
 
 
     def simulate(self, capacity_info: bool = False) -> None:

@@ -382,6 +382,14 @@ class Parse:
         try:
             x: int = int(splited_se[2])
             y: int = int(splited_se[3])
+            for hub in self.hubs:
+                if hub.y == y and hub.x == x:
+                    print(
+                        f"ERROR - LINE {line_number}: "
+                        "Duplicatede coordinates"
+                    )
+                    sys.exit(1)
+
         except ValueError:
             print(
                 f"ERROR - Line {line_number}: "
@@ -562,4 +570,4 @@ class Parse:
         for line_number, line in val_line:
             if line.startswith("connection:"):
                 self.parse_connect(line, line_number)
-
+       
